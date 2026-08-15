@@ -1,0 +1,330 @@
+/* German Vocabulary & Grammar Trainer Design System */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* Color Palette - Dark Theme (Default) */
+  --bg-primary: #0b0f17;
+  --bg-secondary: #131b2a;
+  --bg-tertiary: #1c273c;
+  --bg-card: #162033;
+  --bg-card-hover: #1e2b44;
+  --bg-elevated: #243452;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  --border-subtle: #1e293b;
+  --border-medium: #334155;
+  --border-active: #475569;
+
+  /* Accent Colors */
+  --accent-primary: #38bdf8;
+  --accent-primary-hover: #0ea5e9;
+  --accent-primary-subtle: rgba(56, 189, 248, 0.12);
+
+  --accent-gold: #f59e0b;
+  --accent-gold-subtle: rgba(245, 158, 11, 0.15);
+
+  --accent-purple: #a855f7;
+  --accent-purple-subtle: rgba(168, 85, 247, 0.12);
+
+  /* German Gender Colors */
+  --color-der: #3b82f6; /* Masculine Blue */
+  --color-der-bg: rgba(59, 130, 246, 0.15);
+  --color-der-border: rgba(59, 130, 246, 0.4);
+
+  --color-die: #ec4899; /* Feminine Rose */
+  --color-die-bg: rgba(236, 72, 153, 0.15);
+  --color-die-border: rgba(236, 72, 153, 0.4);
+
+  --color-das: #10b981; /* Neuter Green */
+  --color-das-bg: rgba(16, 185, 129, 0.15);
+  --color-das-border: rgba(16, 185, 129, 0.4);
+
+  --color-success: #10b981;
+  --color-success-bg: rgba(16, 185, 129, 0.15);
+  --color-error: #ef4444;
+  --color-error-bg: rgba(239, 68, 68, 0.15);
+  --color-warning: #f59e0b;
+
+  /* Elevation Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 20px rgba(56, 189, 248, 0.25);
+
+  /* Border Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Typography */
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+[data-theme='light'] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
+  --bg-elevated: #ffffff;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  --border-subtle: #e2e8f0;
+  --border-medium: #cbd5e1;
+  --border-active: #94a3b8;
+
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.12);
+  --shadow-glow: 0 0 20px rgba(14, 165, 233, 0.18);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  outline: none;
+  user-select: none;
+  transition: all var(--transition-fast);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* App Layout Container */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-layout {
+  display: flex;
+  flex: 1;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 4rem 1.25rem;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .main-layout {
+    padding: 2rem 2rem 4rem 2rem;
+    gap: 2rem;
+  }
+}
+
+.content-area {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 3D Flashcard Styles */
+.perspective-container {
+  perspective: 1200px;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.flip-card-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: var(--radius-xl);
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
+}
+
+/* Glassmorphism & Cards */
+.glass-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(12px);
+}
+
+.glass-panel-interactive {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+}
+
+.glass-panel-interactive:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-medium);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Keyframes & Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.92); opacity: 0; }
+  70% { transform: scale(1.03); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(56, 189, 248, 0.6); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+.animate-pop-in {
+  animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+.pulse-glow {
+  animation: pulseGlow 2s infinite;
+}
+
+/* Utility Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
+.badge-der {
+  background: var(--color-der-bg);
+  color: var(--color-der);
+  border: 1px solid var(--color-der-border);
+}
+
+.badge-die {
+  background: var(--color-die-bg);
+  color: var(--color-die);
+  border: 1px solid var(--color-die-border);
+}
+
+.badge-das {
+  background: var(--color-das-bg);
+  color: var(--color-das);
+  border: 1px solid var(--color-das-border);
+}
+
+.badge-cefr {
+  background: var(--accent-primary-subtle);
+  color: var(--accent-primary);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+/* Responsive Layout Classes */
+@media (min-width: 768px) {
+  .md-flex {
+    display: flex !important;
+  }
+  .sidebar-desktop {
+    display: flex !important;
+  }
+  .nav-mobile-bottom {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .lg-inline {
+    display: inline !important;
+  }
+}
+
