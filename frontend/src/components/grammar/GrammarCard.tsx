@@ -1,197 +1,215 @@
 import React, { useState } from 'react';
 import {
+  ChevronDown,
+  ChevronUp,
   CheckCircle2,
   Circle,
   Star,
-  ChevronDown,
-  ChevronUp,
   Lightbulb,
-  Play,
+  Sparkles,
 } from 'lucide-react';
-import type { GrammarRule, UserProfile } from '../../types';
+import type { GrammarRule, GrammarProgress } from '../../types';
 import { CefrBadge } from '../common/CefrBadge';
 import { SpeakerButton } from '../common/SpeakerButton';
-import { GrammarPracticeModal } from './GrammarPracticeModal';
+import { storageService } from '../../services/storageService';
 import { playSfx } from '../../utils/audio';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 interface Props {
   rule: GrammarRule;
-  isLearned: boolean;
-  isStarred: boolean;
-  profile: UserProfile;
-  onToggleLearned: (id: string) => void;
-  onToggleStar: (id: string) => void;
+  progress?: GrammarProgress;
+  speechRate?: number;
+  soundEffects?: boolean;
+  onToggleLearned: (ruleId: string, learned: boolean) => void;
+  onToggleStar: (ruleId: string, starred: boolean) => void;
+  onPracticeRule?: (rule: GrammarRule) => void;
 }
 
 export const GrammarCard: React.FC<Props> = ({
   rule,
-  isLearned,
-  isStarred,
-  profile,
+  progress,
+  speechRate = 1.0,
+  soundEffects = true,
   onToggleLearned,
   onToggleStar,
+  onPracticeRule,
 }) => {
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [showPractice, setShowPractice] = useState(false);
 
-  const handleToggleLearned = (e: React.MouseEvent) => {
+  const isLearned = Boolean(progress?.learned);
+  const isStarred = Boolean(progress?.starred);
+
+  const handleToggleLearnedClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onToggleLearned(rule.id);
-    playSfx('correct', profile.soundEffects);
+    const newStatus = storageService.toggleLearnGrammar(rule.id);
+    onToggleLearned(rule.id, newStatus);
+    playSfx(newStatus ? 'levelup' : 'click', soundEffects);
   };
 
-  const handleToggleStar = (e: React.MouseEvent) => {
+  const handleToggleStarClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onToggleStar(rule.id);
-    playSfx('click', profile.soundEffects);
+    const newStatus = storageService.toggleStarGrammar(rule.id);
+    onToggleStar(rule.id, newStatus);
+    playSfx('click', soundEffects);
   };
 
   return (
-    <>
+    <div
+      className="glass-panel"
+      style={{
+        borderRadius: 'var(--radius-lg)',
+        border: `1px solid ${
+          isLearned
+            ? 'rgba(16, 185, 129, 0.4)'
+            : isStarred
+            ? 'rgba(245, 158, 11, 0.4)'
+            : 'var(--border-subtle)'
+        }`,
+        backgroundColor: isLearned
+          ? 'rgba(16, 185, 129, 0.03)'
+          : 'var(--bg-card)',
+        overflow: 'hidden',
+        transition: 'all var(--transition-fast)',
+      }}
+    >
+      {/* Header Row (Always Visible) */}
       <div
-        className="glass-panel"
+        onClick={() => setIsExpanded(!isExpanded)}
         style={{
-          borderRadius: 'var(--radius-lg)',
-          border: `1px solid ${isLearned ? 'rgba(16, 185, 129, 0.4)' : 'var(--border-subtle)'}`,
-          backgroundColor: isLearned ? 'rgba(16, 185, 129, 0.03)' : 'var(--bg-card)',
-          transition: 'all var(--transition-normal)',
-          overflow: 'hidden',
+          padding: '1.2rem 1.5rem',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
         }}
       >
-        {/* Card Header (Always visible) */}
-        <div
-          onClick={() => setIsExpanded(!isExpanded)}
-          style={{
-            padding: '1.25rem 1.5rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            gap: '1rem',
-          }}
-        >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flex: 1 }}>
+          {/* Learned Status Button */}
+          <button
+            type="button"
+            onClick={handleToggleLearnedClick}
+            style={{
+              color: isLearned ? 'var(--color-success)' : 'var(--text-muted)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0.2rem',
+            }}
+            title={isLearned ? t('grammar.marked_learned') : t('grammar.mark_learned')}
+          >
+            {isLearned ? <CheckCircle2 size={22} /> : <Circle size={22} />}
+          </button>
+
           <div style={{ flex: 1 }}>
-            {/* Category & Tags */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                flexWrap: 'wrap',
-                marginBottom: '0.4rem',
-              }}
-            >
+            {/* Category & CEFR Tags */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem', flexWrap: 'wrap' }}>
               <span
                 style={{
-                  fontSize: '0.75rem',
+                  fontSize: '0.72rem',
                   fontWeight: 700,
                   color: 'var(--accent-primary)',
-                  backgroundColor: 'var(--accent-primary-subtle)',
-                  padding: '0.15rem 0.5rem',
-                  borderRadius: 'var(--radius-full)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
                 }}
               >
                 {rule.category_name}
+                {rule.subcategory ? ` • ${rule.subcategory}` : ''}
               </span>
 
-              {rule.subcategory && (
-                <span
-                  style={{
-                    fontSize: '0.75rem',
-                    color: 'var(--text-muted)',
-                    backgroundColor: 'var(--bg-tertiary)',
-                    padding: '0.15rem 0.5rem',
-                    borderRadius: 'var(--radius-full)',
-                  }}
-                >
-                  {rule.subcategory}
-                </span>
-              )}
-
-              {rule.cefr_levels.map((lvl) => (
+              {rule.cefr_levels?.map((lvl) => (
                 <CefrBadge key={lvl} level={lvl} size="sm" />
               ))}
             </div>
 
-            {/* German Rule Title */}
+            {/* German Rule Summary */}
             <h3
               style={{
-                fontSize: '1.1rem',
+                fontSize: '1.05rem',
                 fontWeight: 700,
                 color: 'var(--text-primary)',
-                lineHeight: 1.4,
-                marginBottom: '0.3rem',
+                lineHeight: 1.35,
               }}
             >
               {rule.rule_german}
             </h3>
 
-            {/* English Rule Translation */}
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+            {/* English Explanation Preview */}
+            <p
+              style={{
+                fontSize: '0.85rem',
+                color: 'var(--text-secondary)',
+                marginTop: '0.2rem',
+                lineHeight: 1.35,
+              }}
+            >
               {rule.rule_english}
             </p>
           </div>
-
-          {/* Action Buttons */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            {/* Learned Checkmark */}
-            <button
-              type="button"
-              onClick={handleToggleLearned}
-              style={{
-                padding: '0.4rem',
-                borderRadius: 'var(--radius-full)',
-                backgroundColor: isLearned ? 'var(--color-success-bg)' : 'var(--bg-tertiary)',
-                color: isLearned ? 'var(--color-success)' : 'var(--text-muted)',
-                border: '1px solid var(--border-subtle)',
-              }}
-              title={isLearned ? 'Als gelernt markiert' : 'Als gelernt markieren'}
-            >
-              {isLearned ? <CheckCircle2 size={18} /> : <Circle size={18} />}
-            </button>
-
-            {/* Star button */}
-            <button
-              type="button"
-              onClick={handleToggleStar}
-              style={{
-                padding: '0.4rem',
-                borderRadius: 'var(--radius-full)',
-                backgroundColor: isStarred ? 'var(--accent-gold-subtle)' : 'var(--bg-tertiary)',
-                color: isStarred ? 'var(--accent-gold)' : 'var(--text-muted)',
-                border: '1px solid var(--border-subtle)',
-              }}
-              title={isStarred ? 'Gemerkt' : 'Zu Favoriten hinzufügen'}
-            >
-              <Star size={18} fill={isStarred ? '#f59e0b' : 'none'} />
-            </button>
-
-            {/* Expand toggle */}
-            <div style={{ color: 'var(--text-muted)', padding: '0.2rem' }}>
-              {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-            </div>
-          </div>
         </div>
 
-        {/* Expanded Content Details */}
-        {isExpanded && (
-          <div
-            className="animate-fade-in"
+        {/* Action Controls & Expand Chevron */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          {/* Star Button */}
+          <button
+            type="button"
+            onClick={handleToggleStarClick}
             style={{
-              padding: '0 1.5rem 1.5rem 1.5rem',
-              borderTop: '1px solid var(--border-subtle)',
-              paddingTop: '1rem',
+              padding: '0.4rem',
+              borderRadius: 'var(--radius-full)',
+              backgroundColor: isStarred ? 'var(--accent-gold-subtle)' : 'transparent',
+              color: isStarred ? 'var(--accent-gold)' : 'var(--text-muted)',
+            }}
+            title={isStarred ? t('grammar.bookmarked') : t('grammar.bookmark')}
+          >
+            <Star size={18} fill={isStarred ? '#f59e0b' : 'none'} />
+          </button>
+
+          {/* Expand Toggle */}
+          <button
+            type="button"
+            style={{
+              padding: '0.4rem',
+              color: 'var(--text-muted)',
             }}
           >
-            {/* Example Sentences */}
-            {rule.example_de && (
+            {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Expanded Details Body */}
+      {isExpanded && (
+        <div
+          className="animate-fade-in"
+          style={{
+            padding: '0 1.5rem 1.5rem 1.5rem',
+            borderTop: '1px solid var(--border-subtle)',
+            backgroundColor: 'var(--bg-secondary)',
+          }}
+        >
+          {/* Examples Section */}
+          {rule.example_de && (
+            <div style={{ marginTop: '1.25rem' }}>
+              <div
+                style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  color: 'var(--text-muted)',
+                  textTransform: 'uppercase',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                {t('grammar.example')}
+              </div>
+
               <div
                 style={{
                   padding: '1rem',
                   borderRadius: 'var(--radius-md)',
-                  backgroundColor: 'var(--bg-secondary)',
+                  backgroundColor: 'var(--bg-tertiary)',
                   border: '1px solid var(--border-subtle)',
-                  marginBottom: '1rem',
                 }}
               >
                 <div
@@ -199,103 +217,105 @@ export const GrammarCard: React.FC<Props> = ({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    marginBottom: '0.35rem',
+                    gap: '0.75rem',
                   }}
                 >
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                    Beispielsatz (Example)
-                  </span>
-                  <SpeakerButton text={rule.example_de} rate={profile.speechSpeed} size={15} />
+                  <div style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                    "{rule.example_de}"
+                  </div>
+                  <SpeakerButton text={rule.example_de} rate={speechRate} size={17} />
                 </div>
-                <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
-                  {rule.example_de}
-                </div>
+
                 {rule.example_en && (
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                    {rule.example_en}
+                  <div
+                    style={{
+                      fontSize: '0.85rem',
+                      color: 'var(--text-muted)',
+                      marginTop: '0.35rem',
+                    }}
+                  >
+                    "{rule.example_en}"
                   </div>
                 )}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Notes / Tips */}
-            {rule.notes && (
-              <div
-                style={{
-                  padding: '0.85rem 1rem',
-                  borderRadius: 'var(--radius-md)',
-                  backgroundColor: 'var(--accent-gold-subtle)',
-                  border: '1px solid rgba(245, 158, 11, 0.25)',
-                  marginBottom: '1rem',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '0.6rem',
-                }}
-              >
-                <Lightbulb size={18} color="var(--accent-gold)" style={{ flexShrink: 0, marginTop: '0.1rem' }} />
-                <div>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-gold)', textTransform: 'uppercase' }}>
-                    Hinweis & Merkhilfe:
-                  </span>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-primary)', marginTop: '0.15rem', lineHeight: 1.4 }}>
-                    {rule.notes}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Tags */}
-            {rule.tags && rule.tags.length > 0 && (
-              <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
-                {rule.tags.map((t, idx) => (
-                  <span
-                    key={idx}
-                    style={{
-                      fontSize: '0.72rem',
-                      padding: '0.15rem 0.5rem',
-                      borderRadius: 'var(--radius-full)',
-                      backgroundColor: 'var(--bg-tertiary)',
-                      color: 'var(--text-muted)',
-                    }}
-                  >
-                    #{t}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Practice Button */}
-            <button
-              type="button"
-              onClick={() => setShowPractice(true)}
+          {/* Notes & Memory Hints */}
+          {rule.notes && (
+            <div
               style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.6rem 1.2rem',
+                marginTop: '1rem',
+                padding: '0.85rem 1rem',
                 borderRadius: 'var(--radius-md)',
-                backgroundColor: 'var(--accent-primary-subtle)',
-                border: '1px solid rgba(56, 189, 248, 0.4)',
-                color: 'var(--accent-primary)',
-                fontWeight: 700,
-                fontSize: '0.85rem',
+                backgroundColor: 'var(--accent-gold-subtle)',
+                border: '1px solid rgba(245, 158, 11, 0.25)',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.6rem',
               }}
             >
-              <Play size={15} fill="currentColor" />
-              <span>Regel jetzt interaktiv üben</span>
-            </button>
-          </div>
-        )}
-      </div>
+              <Lightbulb size={18} color="var(--accent-gold)" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <div>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-gold)', display: 'block' }}>
+                  {t('grammar.notes_tip')}
+                </span>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)', lineHeight: 1.4 }}>
+                  {rule.notes}
+                </span>
+              </div>
+            </div>
+          )}
 
-      {/* Practice Modal */}
-      {showPractice && (
-        <GrammarPracticeModal
-          rule={rule}
-          profile={profile}
-          onClose={() => setShowPractice(false)}
-        />
+          {/* Tags */}
+          {rule.tags && rule.tags.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '1rem' }}>
+              {rule.tags.map((tag) => (
+                <span
+                  key={tag}
+                  style={{
+                    fontSize: '0.72rem',
+                    padding: '0.2rem 0.5rem',
+                    borderRadius: 'var(--radius-full)',
+                    backgroundColor: 'var(--bg-tertiary)',
+                    color: 'var(--text-secondary)',
+                    border: '1px solid var(--border-subtle)',
+                  }}
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Bottom Practice Action Button */}
+          {onPracticeRule && (
+            <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPracticeRule(rule);
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  padding: '0.65rem 1.15rem',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--accent-primary)',
+                  color: '#0b0f17',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                }}
+              >
+                <Sparkles size={16} />
+                <span>{t('grammar.practice_btn')}</span>
+              </button>
+            </div>
+          )}
+        </div>
       )}
-    </>
+    </div>
   );
 };

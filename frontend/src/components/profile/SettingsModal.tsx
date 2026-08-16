@@ -6,15 +6,21 @@ import {
   Sun,
   Trash2,
   UploadCloud,
+  Server,
+  Globe,
 } from 'lucide-react';
 import type { UserProfile, CEFRLevel } from '../../types';
 import { dataService, type SupabaseHealth } from '../../services/dataService';
+import { type BackendHealth } from '../../services/apiService';
 import { storageService } from '../../services/storageService';
 import { playSfx } from '../../utils/audio';
+import { useTranslation } from '../../i18n/LanguageContext';
+import { type Language } from '../../i18n/translations';
 
 interface Props {
   profile: UserProfile;
   supabaseHealth: SupabaseHealth;
+  backendHealth: BackendHealth;
   onUpdateProfile: (updated: UserProfile) => void;
   onRefreshHealth: () => void;
   onClose: () => void;
@@ -23,16 +29,20 @@ interface Props {
 export const SettingsModal: React.FC<Props> = ({
   profile,
   supabaseHealth,
+  backendHealth,
   onUpdateProfile,
   onRefreshHealth,
   onClose,
 }) => {
+  const { language, setLanguage, t } = useTranslation();
+
   const [name, setName] = useState(profile.name);
   const [targetLevel, setTargetLevel] = useState<CEFRLevel>(profile.targetLevel);
   const [dailyGoal, setDailyGoal] = useState(profile.dailyGoal);
   const [speechSpeed, setSpeechSpeed] = useState(profile.speechSpeed);
   const [soundEffects, setSoundEffects] = useState(profile.soundEffects);
   const [theme, setTheme] = useState<'dark' | 'light'>(profile.theme);
+  const [selectedLang, setSelectedLang] = useState<Language>(language);
 
   const [isSeeding, setIsSeeding] = useState(false);
   const [seedProgress, setSeedProgress] = useState(0);
@@ -50,9 +60,11 @@ export const SettingsModal: React.FC<Props> = ({
       speechSpeed,
       soundEffects,
       theme,
+      language: selectedLang,
     };
     storageService.saveProfile(updated);
     onUpdateProfile(updated);
+    setLanguage(selectedLang);
     document.documentElement.setAttribute('data-theme', theme);
     playSfx('click', soundEffects);
     onClose();
@@ -126,10 +138,10 @@ export const SettingsModal: React.FC<Props> = ({
         </button>
 
         <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.25rem' }}>
-          Einstellungen & Konfiguration
+          {t('settings.title')}
         </h2>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-          Passe deine Lernpräferenzen, Audioeinstellungen und Supabase-Synchronisation an.
+          {t('settings.subtitle')}
         </p>
 
         {/* Form Controls */}
@@ -137,7 +149,7 @@ export const SettingsModal: React.FC<Props> = ({
           {/* User Name */}
           <div>
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
-              Dein Name / Profilname
+              {t('settings.name_label')}
             </label>
             <input
               type="text"
@@ -155,38 +167,63 @@ export const SettingsModal: React.FC<Props> = ({
             />
           </div>
 
-          {/* Target CEFR Level */}
-          <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
-              Ziel-Sprachniveau (CEFR)
-            </label>
-            <select
-              value={targetLevel}
-              onChange={(e) => setTargetLevel(e.target.value as CEFRLevel)}
-              style={{
-                width: '100%',
-                padding: '0.65rem 0.85rem',
-                borderRadius: 'var(--radius-md)',
-                backgroundColor: 'var(--bg-tertiary)',
-                border: '1px solid var(--border-subtle)',
-                color: 'var(--text-primary)',
-                fontSize: '0.9rem',
-              }}
-            >
-              <option value="A1">A1 - Anfänger</option>
-              <option value="A2">A2 - Grundlegende Kenntnisse</option>
-              <option value="B1">B1 - Fortgeschrittene Sprachverwendung</option>
-              <option value="B2">B2 - Selbstständige Sprachverwendung</option>
-              <option value="C1">C1 - Fachkundige Sprachkenntnisse</option>
-            </select>
+          {/* App Language & Target CEFR Level in 2 columns */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
+                <Globe size={14} style={{ display: 'inline', marginRight: '4px' }} />
+                {t('settings.app_language')}
+              </label>
+              <select
+                value={selectedLang}
+                onChange={(e) => setSelectedLang(e.target.value as Language)}
+                style={{
+                  width: '100%',
+                  padding: '0.65rem 0.85rem',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--bg-tertiary)',
+                  border: '1px solid var(--border-subtle)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.9rem',
+                }}
+              >
+                <option value="de">🇩🇪 Deutsch (German)</option>
+                <option value="en">🇬🇧 English</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>
+                {t('settings.level_label')}
+              </label>
+              <select
+                value={targetLevel}
+                onChange={(e) => setTargetLevel(e.target.value as CEFRLevel)}
+                style={{
+                  width: '100%',
+                  padding: '0.65rem 0.85rem',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--bg-tertiary)',
+                  border: '1px solid var(--border-subtle)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.9rem',
+                }}
+              >
+                <option value="A1">A1 - Anfänger</option>
+                <option value="A2">A2 - Grundstufe</option>
+                <option value="B1">B1 - Mittelstufe</option>
+                <option value="B2">B2 - Selbstständig</option>
+                <option value="C1">C1 - Fachkundig</option>
+              </select>
+            </div>
           </div>
 
           {/* Daily Goal Slider */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Tägliches Wortziel</label>
+              <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>{t('settings.daily_goal_label')}</label>
               <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
-                {dailyGoal} Wörter / Tag
+                {dailyGoal} {t('settings.words_per_day')}
               </span>
             </div>
             <input
@@ -203,7 +240,7 @@ export const SettingsModal: React.FC<Props> = ({
           {/* Speech Rate Slider */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Aussprache-Geschwindigkeit</label>
+              <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>{t('settings.speech_speed_label')}</label>
               <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
                 {speechSpeed}x
               </span>
@@ -241,7 +278,7 @@ export const SettingsModal: React.FC<Props> = ({
                 onChange={(e) => setSoundEffects(e.target.checked)}
                 style={{ accentColor: 'var(--accent-primary)' }}
               />
-              <span>Soundeffekte</span>
+              <span>{t('settings.sound_effects')}</span>
             </label>
 
             <button
@@ -262,8 +299,40 @@ export const SettingsModal: React.FC<Props> = ({
               }}
             >
               {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
-              <span>{theme === 'dark' ? 'Dunkel-Modus' : 'Hell-Modus'}</span>
+              <span>{theme === 'dark' ? t('settings.theme_dark') : t('settings.theme_light')}</span>
             </button>
+          </div>
+
+          {/* Python Backend Server Status Box */}
+          <div
+            style={{
+              padding: '1rem 1.25rem',
+              borderRadius: 'var(--radius-lg)',
+              backgroundColor: 'var(--bg-card)',
+              border: `1px solid ${backendHealth.online ? 'rgba(16, 185, 129, 0.4)' : 'var(--border-medium)'}`,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Server size={18} color={backendHealth.online ? 'var(--color-success)' : 'var(--text-muted)'} />
+                <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{t('settings.backend_server')}</span>
+              </div>
+              <span
+                style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  padding: '0.15rem 0.5rem',
+                  borderRadius: 'var(--radius-full)',
+                  backgroundColor: backendHealth.online ? 'var(--color-success-bg)' : 'var(--bg-tertiary)',
+                  color: backendHealth.online ? 'var(--color-success)' : 'var(--text-muted)',
+                }}
+              >
+                {backendHealth.online ? 'Online (Port 8000)' : 'Offline'}
+              </span>
+            </div>
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+              {backendHealth.message}
+            </p>
           </div>
 
           {/* Supabase Cloud Connection & Sync Box */}
@@ -278,7 +347,7 @@ export const SettingsModal: React.FC<Props> = ({
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 <Database size={18} color={supabaseHealth.connected ? 'var(--color-success)' : 'var(--accent-gold)'} />
-                <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>Supabase Datenbank</span>
+                <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{t('settings.supabase_db')}</span>
               </div>
               <span
                 style={{
@@ -333,7 +402,7 @@ export const SettingsModal: React.FC<Props> = ({
                 }}
               >
                 <UploadCloud size={16} />
-                <span>Datensätze zu Supabase hochladen (Seed DB)</span>
+                <span>{t('settings.seed_btn')}</span>
               </button>
             )}
 
@@ -369,12 +438,12 @@ export const SettingsModal: React.FC<Props> = ({
                 }}
               >
                 <Trash2 size={16} />
-                <span>Lernfortschritt & Statistiken zurücksetzen</span>
+                <span>{t('settings.reset_btn')}</span>
               </button>
             ) : (
               <div style={{ textAlign: 'center' }}>
                 <p style={{ fontSize: '0.85rem', color: 'var(--color-error)', fontWeight: 700, marginBottom: '0.5rem' }}>
-                  Wirklich alle Lernfortschritte löschen?
+                  {t('settings.reset_confirm_title')}
                 </p>
                 <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
                   <button
@@ -389,7 +458,7 @@ export const SettingsModal: React.FC<Props> = ({
                       fontSize: '0.8rem',
                     }}
                   >
-                    Ja, alles löschen
+                    {t('settings.reset_confirm_yes')}
                   </button>
                   <button
                     type="button"
@@ -402,7 +471,7 @@ export const SettingsModal: React.FC<Props> = ({
                       fontSize: '0.8rem',
                     }}
                   >
-                    Abbrechen
+                    {t('settings.cancel')}
                   </button>
                 </div>
               </div>
@@ -425,7 +494,7 @@ export const SettingsModal: React.FC<Props> = ({
               fontSize: '0.95rem',
             }}
           >
-            Änderungen speichern
+            {t('settings.save')}
           </button>
         </div>
       </div>

@@ -87,6 +87,8 @@ export interface UserProfile {
   soundEffects: boolean;
   speechSpeed: number; // 0.75 to 1.25
   theme: 'dark' | 'light';
+  language?: 'de' | 'en';
+  email?: string;
   activityHistory: Record<string, number>; // date 'YYYY-MM-DD' -> count
   rushHighScore: number;
 }

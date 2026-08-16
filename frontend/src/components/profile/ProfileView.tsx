@@ -1,116 +1,96 @@
 import React, { useMemo } from 'react';
 import {
+  User,
   Flame,
   Zap,
-  CheckCircle2,
+  Target,
   Trophy,
   Star,
-  Settings,
   Calendar,
+  Settings,
   ArrowRight,
-  Award,
 } from 'lucide-react';
 import type { UserProfile, Word, GrammarRule } from '../../types';
-import { CefrBadge } from '../common/CefrBadge';
-import { SpeakerButton } from '../common/SpeakerButton';
-import { ProgressBar } from '../common/ProgressBar';
 import { storageService } from '../../services/storageService';
+import { CefrBadge } from '../common/CefrBadge';
+import { GenderBadge } from '../common/GenderBadge';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 interface Props {
   profile: UserProfile;
   words: Word[];
-  rules: GrammarRule[];
+  grammarRules: GrammarRule[];
   onOpenSettings: () => void;
-  onNavigateToVocab: () => void;
-  onNavigateToGrammar: () => void;
+  onNavigateTab: (tab: 'vocab' | 'grammar' | 'lexicon') => void;
 }
 
 export const ProfileView: React.FC<Props> = ({
   profile,
   words,
-  rules,
+  grammarRules,
   onOpenSettings,
-  onNavigateToVocab,
-  onNavigateToGrammar,
+  onNavigateTab,
 }) => {
+  const { t } = useTranslation();
   const wordProgressMap = useMemo(() => storageService.getAllWordProgress(), [profile]);
   const grammarProgressMap = useMemo(() => storageService.getAllGrammarProgress(), [profile]);
 
-  // Compute vocabulary mastery counts
-  const vocabStats = useMemo(() => {
-    let mastered = 0;
-    let familiar = 0;
-    let learning = 0;
-    let unseen = 0;
+  // Compute Word Mastery stats
+  const masteryStats = useMemo(() => {
+    let mastered = 0; // Level 3+
+    let familiar = 0; // Level 2
+    let learning = 0; // Level 1
+    let unlearned = 0; // Level 0
 
     words.forEach((w) => {
       const p = wordProgressMap[w.german.toLowerCase().trim()];
-      if (!p || p.timesReviewed === 0) {
-        unseen++;
-      } else if (p.mastery >= 3) {
-        mastered++;
-      } else if (p.mastery === 2) {
-        familiar++;
-      } else {
-        learning++;
-      }
+      const m = p?.mastery || 0;
+      if (m >= 3) mastered++;
+      else if (m === 2) familiar++;
+      else if (m === 1) learning++;
+      else unlearned++;
     });
 
-    return { mastered, familiar, learning, unseen, total: words.length };
+    return { mastered, familiar, learning, unlearned, total: words.length };
   }, [words, wordProgressMap]);
 
-  // Compute grammar mastery counts
-  const grammarStats = useMemo(() => {
-    let learned = 0;
-    let starred = 0;
-
-    rules.forEach((r) => {
-      const p = grammarProgressMap[r.id];
-      if (p?.learned) learned++;
-      if (p?.starred) starred++;
-    });
-
-    return { learned, starred, total: rules.length };
-  }, [rules, grammarProgressMap]);
-
-  // Starred Words list
+  // Starred Words & Rules
   const starredWords = useMemo(() => {
     return words.filter((w) => wordProgressMap[w.german.toLowerCase().trim()]?.starred);
   }, [words, wordProgressMap]);
 
-  // Generate 7-day activity data
-  const weeklyActivity = useMemo(() => {
-    const days: { label: string; date: string; count: number; isToday: boolean }[] = [];
+  const starredRules = useMemo(() => {
+    return grammarRules.filter((r) => grammarProgressMap[r.id]?.starred);
+  }, [grammarRules, grammarProgressMap]);
+
+  const learnedRulesCount = useMemo(() => {
+    return Object.values(grammarProgressMap).filter((p) => p.learned).length;
+  }, [grammarProgressMap]);
+
+  const xpIntoCurrentLevel = profile.xp % 100;
+  const levelProgressPercent = Math.min(100, Math.round((xpIntoCurrentLevel / 100) * 100));
+
+  // Activity History: past 7 days
+  const past7Days = useMemo(() => {
+    const days: { dateStr: string; label: string; count: number }[] = [];
     const today = new Date();
 
     for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(today.getDate() - i);
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split('T')[0];
-      const dayNames = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-      const label = dayNames[d.getDay()];
-
-      days.push({
-        label,
-        date: dateStr,
-        count: profile.activityHistory?.[dateStr] || 0,
-        isToday: i === 0,
-      });
+      const dayName = d.toLocaleDateString('de-DE', { weekday: 'short' });
+      const count = profile.activityHistory?.[dateStr] || 0;
+      days.push({ dateStr, label: dayName, count });
     }
-
-    const maxCount = Math.max(1, ...days.map((d) => d.count));
-    return { days, maxCount };
+    return days;
   }, [profile.activityHistory]);
 
-  // XP Progress to next level
-  const prevLevelXp = Math.pow(profile.level - 1, 2) * 50;
-  const nextLevelXp = Math.pow(profile.level, 2) * 50;
-  const xpInCurrentLevel = Math.max(0, profile.xp - prevLevelXp);
-  const xpNeededInCurrentLevel = Math.max(1, nextLevelXp - prevLevelXp);
+  const maxActivity = Math.max(1, ...past7Days.map((d) => d.count));
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      {/* Profile Header Card */}
+      {/* Profile Overview Card */}
       <div
         className="glass-panel"
         style={{
@@ -128,173 +108,207 @@ export const ProfileView: React.FC<Props> = ({
             gap: '1.5rem',
           }}
         >
-          {/* Avatar and Details */}
+          {/* User Info & Avatar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
             <div
               style={{
                 width: '72px',
                 height: '72px',
                 borderRadius: 'var(--radius-full)',
-                background: 'linear-gradient(135deg, #38bdf8, #a855f7)',
+                background: 'linear-gradient(135deg, #2563eb, #10b981)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '1.75rem',
-                fontWeight: 800,
-                color: '#ffffff',
                 boxShadow: 'var(--shadow-md)',
+                color: '#ffffff',
               }}
             >
-              {profile.name[0]?.toUpperCase() || 'D'}
+              <User size={36} />
             </div>
 
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-                <h1 style={{ fontSize: '1.85rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                <h1 style={{ fontSize: '1.65rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
                   {profile.name}
                 </h1>
                 <CefrBadge level={profile.targetLevel} size="md" />
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.2rem' }}>
-                <Award size={16} color="var(--accent-gold)" />
-                <span style={{ fontSize: '0.9rem', color: 'var(--accent-gold)', fontWeight: 700 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span
+                  style={{
+                    fontSize: '0.82rem',
+                    fontWeight: 700,
+                    color: 'var(--accent-primary)',
+                    backgroundColor: 'var(--accent-primary-subtle)',
+                    padding: '0.15rem 0.5rem',
+                    borderRadius: 'var(--radius-full)',
+                  }}
+                >
                   Stufe {profile.level}: {profile.levelTitle}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Settings Button */}
+          {/* Edit Profile Button */}
           <button
             type="button"
             onClick={onOpenSettings}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.5rem',
+              gap: '0.4rem',
               padding: '0.65rem 1.2rem',
               borderRadius: 'var(--radius-md)',
               backgroundColor: 'var(--bg-tertiary)',
               border: '1px solid var(--border-subtle)',
               color: 'var(--text-primary)',
-              fontWeight: 600,
+              fontWeight: 700,
               fontSize: '0.85rem',
             }}
           >
             <Settings size={16} />
-            <span>Profil anpassen</span>
+            <span>{t('profile.edit_btn')}</span>
           </button>
         </div>
 
         {/* Level XP Progress Bar */}
-        <div style={{ marginTop: '1.75rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border-subtle)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
-            <span style={{ color: 'var(--text-secondary)' }}>
-              Stufe {profile.level} Fortschritt ({xpInCurrentLevel} / {xpNeededInCurrentLevel} XP)
+        <div style={{ marginTop: '1.75rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '0.4rem' }}>
+            <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>
+              {t('profile.level_progress')} (Stufe {profile.level})
             </span>
             <span style={{ color: 'var(--accent-primary)', fontWeight: 700 }}>
-              Noch {Math.max(0, nextLevelXp - profile.xp)} XP bis Stufe {profile.level + 1}
+              {xpIntoCurrentLevel} / 100 XP
             </span>
           </div>
-          <ProgressBar current={xpInCurrentLevel} total={xpNeededInCurrentLevel} height={10} color="var(--accent-primary)" />
+
+          <div
+            style={{
+              width: '100%',
+              height: '10px',
+              backgroundColor: 'var(--bg-tertiary)',
+              borderRadius: 'var(--radius-full)',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                width: `${levelProgressPercent}%`,
+                height: '100%',
+                background: 'linear-gradient(90deg, #38bdf8, #10b981)',
+                transition: 'width 0.4s ease',
+              }}
+            />
+          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+            {t('profile.xp_to_next', { xp: 100 - xpIntoCurrentLevel, lvl: profile.level + 1 })}
+          </div>
         </div>
       </div>
 
-      {/* 4 Core Metrics Grid */}
+      {/* Key Metrics Grid */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '1.25rem',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '1rem',
         }}
       >
         {/* Streak */}
         <div
           className="glass-panel"
           style={{
-            padding: '1.5rem',
-            borderLeft: '4px solid var(--accent-gold)',
+            padding: '1.25rem',
+            borderLeft: '4px solid #f59e0b',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)' }}>Lernserie</span>
-            <Flame size={22} color="var(--accent-gold)" fill={profile.streak > 0 ? '#f59e0b' : 'none'} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-gold)', marginBottom: '0.5rem' }}>
+            <Flame size={20} fill="#f59e0b" />
+            <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{t('profile.streak_title')}</span>
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--accent-gold)' }}>
-            {profile.streak} {profile.streak === 1 ? 'Tag' : 'Tage'}
+          <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>
+            {profile.streak} <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-muted)' }}>{t('profile.streak_days')}</span>
           </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
-            Täglich üben, um die Serie zu halten
-          </div>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+            {t('profile.streak_desc')}
+          </p>
         </div>
 
         {/* Total XP */}
         <div
           className="glass-panel"
           style={{
-            padding: '1.5rem',
+            padding: '1.25rem',
             borderLeft: '4px solid var(--accent-primary)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)' }}>Gesamt-XP</span>
-            <Zap size={22} color="var(--accent-primary)" fill="currentColor" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-primary)', marginBottom: '0.5rem' }}>
+            <Zap size={20} fill="currentColor" />
+            <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{t('profile.total_xp')}</span>
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--accent-primary)' }}>
-            {profile.xp.toLocaleString()} XP
+          <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>
+            {profile.xp} <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-muted)' }}>XP</span>
           </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
-            Erhalten durch Flashcards & Quizzes
-          </div>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+            {t('profile.total_xp_desc')}
+          </p>
         </div>
 
         {/* Daily Goal */}
         <div
           className="glass-panel"
           style={{
-            padding: '1.5rem',
-            borderLeft: '4px solid var(--color-success)',
+            padding: '1.25rem',
+            borderLeft: '4px solid #10b981',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)' }}>Tagesziel</span>
-            <CheckCircle2 size={22} color="var(--color-success)" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-success)', marginBottom: '0.5rem' }}>
+            <Target size={20} />
+            <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{t('profile.daily_goal')}</span>
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--color-success)' }}>
+          <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>
             {profile.todayWordsPracticed} / {profile.dailyGoal}
           </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
-            {Math.min(100, Math.round((profile.todayWordsPracticed / profile.dailyGoal) * 100))}% erreicht heute
-          </div>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+            {Math.round((profile.todayWordsPracticed / profile.dailyGoal) * 100)}% {t('profile.daily_goal_desc')}
+          </p>
         </div>
 
-        {/* Article Rush High Score */}
+        {/* Rush High Score */}
         <div
           className="glass-panel"
           style={{
-            padding: '1.5rem',
+            padding: '1.25rem',
             borderLeft: '4px solid #a855f7',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)' }}>Artikel-Rush Rekord</span>
-            <Trophy size={22} color="#a855f7" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#a855f7', marginBottom: '0.5rem' }}>
+            <Trophy size={20} />
+            <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{t('profile.rush_record')}</span>
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#a855f7' }}>
-            {profile.rushHighScore || 0} Pkt
+          <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>
+            {profile.rushHighScore || 0} <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-muted)' }}>Pkt</span>
           </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
-            Beste Punktzahl im Schnelligkeitstest
-          </div>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+            {t('profile.rush_record_desc')}
+          </p>
         </div>
       </div>
 
       {/* 7-Day Activity Chart */}
-      <div className="glass-panel" style={{ padding: '1.75rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
-          <Calendar size={20} color="var(--accent-primary)" />
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Lernaktivität der letzten 7 Tage</h2>
+      <div
+        className="glass-panel"
+        style={{
+          padding: '1.5rem',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
+          <Calendar size={18} color="var(--accent-primary)" />
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>
+            {t('profile.activity_chart')}
+          </h3>
         </div>
 
         <div
@@ -302,18 +316,18 @@ export const ProfileView: React.FC<Props> = ({
             display: 'flex',
             alignItems: 'flex-end',
             justifyContent: 'space-between',
-            gap: '1rem',
-            height: '160px',
-            paddingBottom: '1.5rem',
-            borderBottom: '1px solid var(--border-subtle)',
+            height: '140px',
+            gap: '0.5rem',
+            paddingTop: '1rem',
           }}
         >
-          {weeklyActivity.days.map((day) => {
-            const heightPercent = Math.max(12, Math.round((day.count / weeklyActivity.maxCount) * 100));
+          {past7Days.map((day) => {
+            const heightPct = Math.max(8, Math.round((day.count / maxActivity) * 100));
+            const isToday = day.dateStr === new Date().toISOString().split('T')[0];
 
             return (
               <div
-                key={day.date}
+                key={day.dateStr}
                 style={{
                   flex: 1,
                   display: 'flex',
@@ -324,193 +338,268 @@ export const ProfileView: React.FC<Props> = ({
                   justifyContent: 'flex-end',
                 }}
               >
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: day.count > 0 ? 'var(--accent-primary)' : 'var(--text-muted)' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: day.count > 0 ? 'var(--text-primary)' : 'var(--text-muted)' }}>
                   {day.count}
-                </span>
-
+                </div>
                 <div
                   style={{
                     width: '100%',
-                    maxWidth: '40px',
-                    height: `${heightPercent}%`,
+                    maxWidth: '38px',
+                    height: `${heightPct}%`,
                     borderRadius: 'var(--radius-sm)',
-                    backgroundColor: day.isToday
+                    backgroundColor: isToday
                       ? 'var(--accent-primary)'
                       : day.count > 0
                       ? 'var(--accent-primary-subtle)'
                       : 'var(--bg-tertiary)',
-                    border: `1px solid ${day.isToday ? 'var(--accent-primary)' : 'var(--border-subtle)'}`,
-                    transition: 'all 0.3s ease',
+                    border: `1px solid ${isToday ? 'var(--accent-primary)' : 'var(--border-subtle)'}`,
+                    transition: 'height 0.4s ease',
                   }}
-                  title={`${day.date}: ${day.count} Wörter geübt`}
+                  title={`${day.dateStr}: ${day.count} Wörter geübt`}
                 />
-
-                <span
+                <div
                   style={{
-                    fontSize: '0.75rem',
-                    fontWeight: day.isToday ? 800 : 500,
-                    color: day.isToday ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                    fontSize: '0.72rem',
+                    fontWeight: isToday ? 800 : 500,
+                    color: isToday ? 'var(--accent-primary)' : 'var(--text-muted)',
                   }}
                 >
                   {day.label}
-                </span>
+                </div>
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Mastery Breakdown Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
-        {/* Vocab Mastery Breakdown */}
-        <div className="glass-panel" style={{ padding: '1.75rem' }}>
+      {/* Mastery & Grammar Summary (2-Col Layout) */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: '1.5rem',
+        }}
+      >
+        {/* Vocabulary Mastery Breakdown */}
+        <div
+          className="glass-panel"
+          style={{
+            padding: '1.5rem',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Wortschatz-Beherrschung</h3>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>
+              {t('profile.vocab_mastery')}
+            </h3>
             <button
               type="button"
-              onClick={onNavigateToVocab}
-              style={{ fontSize: '0.8rem', color: 'var(--accent-primary)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.2rem' }}
+              onClick={() => onNavigateTab('vocab')}
+              style={{
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                color: 'var(--accent-primary)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+              }}
             >
-              <span>Üben</span>
+              <span>{t('profile.practice_btn')}</span>
               <ArrowRight size={14} />
             </button>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+            {/* Level 3: Mastered */}
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '0.25rem' }}>
-                <span style={{ color: 'var(--color-success)', fontWeight: 600 }}>✓ Gemeistert (Level 3)</span>
-                <span>{vocabStats.mastered} Wörter ({Math.round((vocabStats.mastered / vocabStats.total) * 100)}%)</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.25rem' }}>
+                <span style={{ color: 'var(--color-success)', fontWeight: 600 }}>
+                  {t('profile.mastery_level_3')}
+                </span>
+                <span style={{ fontWeight: 700 }}>{masteryStats.mastered}</span>
               </div>
-              <ProgressBar current={vocabStats.mastered} total={vocabStats.total} color="var(--color-success)" height={7} />
+              <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
+                <div style={{ width: `${(masteryStats.mastered / masteryStats.total) * 100}%`, height: '100%', backgroundColor: 'var(--color-success)' }} />
+              </div>
             </div>
 
+            {/* Level 2: Familiar */}
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '0.25rem' }}>
-                <span style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>Vertraut (Level 2)</span>
-                <span>{vocabStats.familiar} Wörter ({Math.round((vocabStats.familiar / vocabStats.total) * 100)}%)</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.25rem' }}>
+                <span style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>
+                  {t('profile.mastery_level_2')}
+                </span>
+                <span style={{ fontWeight: 700 }}>{masteryStats.familiar}</span>
               </div>
-              <ProgressBar current={vocabStats.familiar} total={vocabStats.total} color="var(--accent-primary)" height={7} />
+              <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
+                <div style={{ width: `${(masteryStats.familiar / masteryStats.total) * 100}%`, height: '100%', backgroundColor: 'var(--accent-primary)' }} />
+              </div>
             </div>
 
+            {/* Level 1: Learning */}
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '0.25rem' }}>
-                <span style={{ color: 'var(--accent-gold)', fontWeight: 600 }}>In Bearbeitung (Level 1)</span>
-                <span>{vocabStats.learning} Wörter ({Math.round((vocabStats.learning / vocabStats.total) * 100)}%)</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.25rem' }}>
+                <span style={{ color: 'var(--accent-gold)', fontWeight: 600 }}>
+                  {t('profile.mastery_level_1')}
+                </span>
+                <span style={{ fontWeight: 700 }}>{masteryStats.learning}</span>
               </div>
-              <ProgressBar current={vocabStats.learning} total={vocabStats.total} color="var(--accent-gold)" height={7} />
+              <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
+                <div style={{ width: `${(masteryStats.learning / masteryStats.total) * 100}%`, height: '100%', backgroundColor: 'var(--accent-gold)' }} />
+              </div>
             </div>
 
+            {/* Level 0: Unseen */}
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '0.25rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Noch ungeübt</span>
-                <span>{vocabStats.unseen} Wörter ({Math.round((vocabStats.unseen / vocabStats.total) * 100)}%)</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.25rem' }}>
+                <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>
+                  {t('profile.mastery_level_0')}
+                </span>
+                <span style={{ fontWeight: 700 }}>{masteryStats.unlearned}</span>
               </div>
-              <ProgressBar current={vocabStats.unseen} total={vocabStats.total} color="var(--border-medium)" height={7} />
+              <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
+                <div style={{ width: `${(masteryStats.unlearned / masteryStats.total) * 100}%`, height: '100%', backgroundColor: 'var(--text-muted)' }} />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Grammar Rules Breakdown */}
-        <div className="glass-panel" style={{ padding: '1.75rem' }}>
+        {/* Grammar Mastery Card */}
+        <div
+          className="glass-panel"
+          style={{
+            padding: '1.5rem',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 800 }}>Grammatik-Status</h3>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>
+              {t('profile.grammar_status')}
+            </h3>
             <button
               type="button"
-              onClick={onNavigateToGrammar}
-              style={{ fontSize: '0.8rem', color: 'var(--accent-primary)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.2rem' }}
+              onClick={() => onNavigateTab('grammar')}
+              style={{
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                color: 'var(--accent-primary)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+              }}
             >
-              <span>Regeln ansehen</span>
+              <span>{t('profile.view_rules')}</span>
               <ArrowRight size={14} />
             </button>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.35rem' }}>
-                <span>Gelernt & Verstanden</span>
-                <strong style={{ color: 'var(--color-success)' }}>
-                  {grammarStats.learned} / {grammarStats.total} ({Math.round((grammarStats.learned / grammarStats.total) * 100)}%)
-                </strong>
-              </div>
-              <ProgressBar current={grammarStats.learned} total={grammarStats.total} color="var(--color-success)" height={8} />
-            </div>
-
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem' }}>
             <div
               style={{
-                padding: '1rem',
-                borderRadius: 'var(--radius-md)',
-                backgroundColor: 'var(--bg-tertiary)',
-                border: '1px solid var(--border-subtle)',
-                marginTop: '0.5rem',
+                width: '80px',
+                height: '80px',
+                borderRadius: 'var(--radius-full)',
+                border: '6px solid var(--color-success)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
               }}
             >
-              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
-                ★ {grammarStats.starred} Grammatikregeln gemerkt
+              <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                {learnedRulesCount}
+              </span>
+              <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>/ {grammarRules.length}</span>
+            </div>
+
+            <div>
+              <div style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                {learnedRulesCount} Regeln gemeistert
               </div>
-              <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-                Wiederhole gemerkte Regeln regelmäßig mit den interaktiven Übungen.
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                {t('profile.grammar_learned_desc')}
               </p>
             </div>
           </div>
+
+          {/* Bookmarked rules notice */}
+          {starredRules.length > 0 && (
+            <div
+              style={{
+                padding: '0.85rem 1rem',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--accent-gold-subtle)',
+                border: '1px solid rgba(245, 158, 11, 0.3)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-gold)', fontWeight: 700, fontSize: '0.85rem' }}>
+                <Star size={16} fill="#f59e0b" />
+                <span>{starredRules.length} {t('profile.rules_bookmarked')}</span>
+              </div>
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                {t('profile.rules_bookmarked_desc')}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Starred Vocabulary Section */}
+      {/* Starred Words Collection */}
       {starredWords.length > 0 && (
-        <div className="glass-panel" style={{ padding: '1.75rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+        <div
+          className="glass-panel"
+          style={{
+            padding: '1.5rem',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Star size={20} color="var(--accent-gold)" fill="#f59e0b" />
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>
-                Gemerkte Vokabeln ({starredWords.length})
+              <Star size={18} fill="#f59e0b" color="#f59e0b" />
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>
+                {t('profile.starred_vocab')} ({starredWords.length})
               </h3>
             </div>
             <button
               type="button"
-              onClick={onNavigateToVocab}
+              onClick={() => onNavigateTab('vocab')}
               style={{
-                padding: '0.4rem 0.85rem',
-                borderRadius: 'var(--radius-sm)',
-                backgroundColor: 'var(--accent-primary)',
-                color: '#0b0f17',
-                fontWeight: 700,
                 fontSize: '0.8rem',
+                fontWeight: 700,
+                color: 'var(--accent-gold)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem',
               }}
             >
-              Jetzt üben
+              <span>{t('profile.practice_now')}</span>
+              <ArrowRight size={14} />
             </button>
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-              gap: '0.75rem',
-            }}
-          >
-            {starredWords.slice(0, 12).map((w, idx) => (
-              <div
-                key={idx}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+            {starredWords.slice(0, 20).map((word) => (
+              <span
+                key={word.german}
                 style={{
-                  padding: '0.75rem 1rem',
+                  padding: '0.35rem 0.65rem',
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--bg-tertiary)',
                   border: '1px solid var(--border-subtle)',
-                  display: 'flex',
+                  fontSize: '0.82rem',
+                  display: 'inline-flex',
                   alignItems: 'center',
-                  justifyContent: 'space-between',
+                  gap: '0.35rem',
                 }}
               >
-                <div>
-                  <div style={{ fontSize: '0.95rem', fontWeight: 700 }}>
-                    {w.gender ? `${w.gender} ` : ''}{w.german}
-                  </div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--accent-primary)' }}>{w.english}</div>
-                </div>
-                <SpeakerButton text={w.german} size={15} />
-              </div>
+                <GenderBadge gender={word.gender} size="sm" />
+                <strong>{word.german}</strong>
+                <span style={{ color: 'var(--text-muted)' }}>→ {word.english}</span>
+              </span>
             ))}
+            {starredWords.length > 20 && (
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', alignSelf: 'center' }}>
+                +{starredWords.length - 20} weitere
+              </span>
+            )}
           </div>
         </div>
       )}

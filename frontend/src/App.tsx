@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { Word, GrammarRule, UserProfile, ActiveTab } from './types';
+import { dataService, type SupabaseHealth } from './services/dataService';
+import { apiService, type BackendHealth } from './services/apiService';
+import { storageService } from './services/storageService';
+import { playSfx } from './utils/audio';
+import { LanguageProvider } from './i18n/LanguageContext';
+import { AuthProvider, useAuth } from './services/authContext';
+
 import { Navbar } from './components/navigation/Navbar';
 import { Sidebar } from './components/navigation/Sidebar';
 import { VocabHub } from './components/vocab/VocabHub';
@@ -7,54 +14,105 @@ import { GrammarExplorer } from './components/grammar/GrammarExplorer';
 import { LexiconExplorer } from './components/lexicon/LexiconExplorer';
 import { ProfileView } from './components/profile/ProfileView';
 import { SettingsModal } from './components/profile/SettingsModal';
-import { dataService, type SupabaseHealth } from './services/dataService';
-import { storageService } from './services/storageService';
-import { playSfx } from './utils/audio';
-import { Loader2 } from 'lucide-react';
+import { AuthModal } from './components/auth/AuthModal';
 
-export const App: React.FC = () => {
+const AppContent: React.FC = () => {
+  const { user, session } = useAuth();
+
   const [activeTab, setActiveTab] = useState<ActiveTab>('vocab');
+  const [profile, setProfile] = useState<UserProfile>(() => storageService.getProfile());
   const [words, setWords] = useState<Word[]>([]);
   const [grammarRules, setGrammarRules] = useState<GrammarRule[]>([]);
-  const [profile, setProfile] = useState<UserProfile>(() => storageService.getProfile());
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+
   const [supabaseHealth, setSupabaseHealth] = useState<SupabaseHealth>({
     connected: false,
     wordsCount: 0,
     rulesCount: 0,
-    message: 'Initialisiere Verbindung...',
+    message: 'Verbinde...',
   });
 
-  // Apply theme to document on mount
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', profile.theme);
-  }, [profile.theme]);
+  const [backendHealth, setBackendHealth] = useState<BackendHealth>({
+    online: false,
+    databaseConnected: false,
+    wordsCount: 0,
+    rulesCount: 0,
+  });
 
-  // Load datasets and verify Supabase health
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+
+  // Load initial data
   const loadInitialData = useCallback(async () => {
-    setIsLoading(true);
+    setLoading(true);
 
-    try {
-      const [wordsRes, grammarRes, healthRes] = await Promise.all([
-        dataService.getWords(),
-        dataService.getGrammarRules(),
-        dataService.checkHealth(),
-      ]);
+    // 1. Check Python backend server health
+    const bHealth = await apiService.checkHealth();
+    setBackendHealth(bHealth);
 
-      setWords(wordsRes.data);
-      setGrammarRules(grammarRes.data);
-      setSupabaseHealth(healthRes);
-    } catch (err) {
-      console.error('Failed to load initial data:', err);
-    } finally {
-      setIsLoading(false);
+    // 2. Fetch words (from backend if available, or dataService)
+    let fetchedWords: Word[] = [];
+    if (bHealth.online) {
+      const res = await apiService.getWords({ pageSize: 500 });
+      if (res && res.data && res.data.length > 0) {
+        fetchedWords = res.data;
+      }
     }
+    if (fetchedWords.length === 0) {
+      const res = await dataService.getWords();
+      fetchedWords = res.data;
+    }
+    setWords(fetchedWords);
+
+    // 3. Fetch grammar rules (from backend or dataService)
+    let fetchedRules: GrammarRule[] = [];
+    if (bHealth.online) {
+      const res = await apiService.getGrammarRules();
+      if (res && res.data && res.data.length > 0) {
+        fetchedRules = res.data;
+      }
+    }
+    if (fetchedRules.length === 0) {
+      const res = await dataService.getGrammarRules();
+      fetchedRules = res.data;
+    }
+    setGrammarRules(fetchedRules);
+
+    // 4. Check Supabase health
+    const sHealth = await dataService.checkHealth();
+    setSupabaseHealth(sHealth);
+
+    setLoading(false);
   }, []);
 
   useEffect(() => {
     loadInitialData();
   }, [loadInitialData]);
+
+  // Sync profile when user changes
+  useEffect(() => {
+    if (user) {
+      const updated: UserProfile = {
+        ...profile,
+        name: user.user_metadata?.display_name || user.email?.split('@')[0] || profile.name,
+        email: user.email,
+      };
+      setProfile(updated);
+      storageService.saveProfile(updated);
+
+      // Trigger cloud sync to backend
+      if (backendHealth.online && session?.access_token) {
+        apiService.syncProgress(
+          {
+            profile: updated,
+            words_progress: storageService.getAllWordProgress(),
+            grammar_progress: storageService.getAllGrammarProgress(),
+          },
+          session.access_token
+        );
+      }
+    }
+  }, [user, session]);
 
   const handleToggleTheme = () => {
     const nextTheme: 'dark' | 'light' = profile.theme === 'dark' ? 'light' : 'dark';
@@ -65,104 +123,112 @@ export const App: React.FC = () => {
     playSfx('click', profile.soundEffects);
   };
 
-  const handleUpdateProfile = (updated: UserProfile) => {
-    setProfile(updated);
+  const handleRefreshProfile = () => {
+    setProfile(storageService.getProfile());
   };
 
-  const handleRefreshHealth = async () => {
-    const health = await dataService.checkHealth();
-    setSupabaseHealth(health);
-    const [wRes, gRes] = await Promise.all([
-      dataService.getWords(true),
-      dataService.getGrammarRules(true),
-    ]);
-    setWords(wRes.data);
-    setGrammarRules(gRes.data);
-  };
-
-  // Count starred words for sidebar badge
-  const starredWordsCount = React.useMemo(() => {
-    const progress = storageService.getAllWordProgress();
-    return Object.values(progress).filter((p) => p.starred).length;
-  }, [profile]);
-
-  if (isLoading) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          backgroundColor: 'var(--bg-primary)',
-          gap: '1rem',
-        }}
-      >
-        <Loader2 size={42} className="animate-spin" color="var(--accent-primary)" />
-        <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-          DeutschAide wird geladen...
-        </div>
-        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          Wortschatz & Grammatikregeln werden vorbereitet
-        </p>
-      </div>
-    );
-  }
+  const starredWordsCount = Object.values(storageService.getAllWordProgress()).filter(
+    (p) => p.starred
+  ).length;
 
   return (
-    <div className="app-container">
-      {/* Top Navigation Bar */}
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-primary)' }}>
+      {/* Top Sticky Navbar */}
       <Navbar
         profile={profile}
         supabaseConnected={supabaseHealth.connected}
+        backendHealth={backendHealth}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onToggleTheme={handleToggleTheme}
+        onOpenAuth={() => setIsAuthOpen(true)}
       />
 
       {/* Main Layout Container */}
-      <div className="main-layout">
-        {/* Navigation Sidebar */}
+      <div
+        style={{
+          maxWidth: '1400px',
+          width: '100%',
+          margin: '0 auto',
+          padding: '1.5rem 1.25rem 5rem 1.25rem',
+          display: 'flex',
+          gap: '2rem',
+          flex: 1,
+        }}
+      >
+        {/* Sidebar Navigation */}
         <Sidebar
           activeTab={activeTab}
-          onSelectTab={setActiveTab}
+          onSelectTab={(tab) => {
+            setActiveTab(tab);
+            playSfx('click', profile.soundEffects);
+          }}
           starredWordsCount={starredWordsCount}
           totalWordsCount={words.length}
         />
 
-        {/* Dynamic Content Views */}
-        <main className="content-area">
-          {activeTab === 'vocab' && (
-            <VocabHub
-              words={words}
-              profile={profile}
-              onRefreshData={loadInitialData}
-            />
-          )}
+        {/* Dynamic Tab Content Area */}
+        <main style={{ flex: 1, minWidth: 0 }}>
+          {loading ? (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '4rem 1rem',
+                gap: '1rem',
+              }}
+            >
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: 'var(--radius-full)',
+                  border: '4px solid var(--accent-primary-subtle)',
+                  borderTopColor: 'var(--accent-primary)',
+                  animation: 'spin 0.8s linear infinite',
+                }}
+              />
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
+                Lade Wörter & Grammatikregeln...
+              </p>
+            </div>
+          ) : (
+            <>
+              {activeTab === 'vocab' && (
+                <VocabHub
+                  words={words}
+                  profile={profile}
+                  onRefreshData={handleRefreshProfile}
+                />
+              )}
 
-          {activeTab === 'grammar' && (
-            <GrammarExplorer
-              rules={grammarRules}
-              profile={profile}
-            />
-          )}
+              {activeTab === 'grammar' && (
+                <GrammarExplorer
+                  rules={grammarRules}
+                  profile={profile}
+                  onRefreshProfile={handleRefreshProfile}
+                />
+              )}
 
-          {activeTab === 'lexicon' && (
-            <LexiconExplorer
-              words={words}
-              profile={profile}
-            />
-          )}
+              {activeTab === 'lexicon' && (
+                <LexiconExplorer
+                  words={words}
+                  profile={profile}
+                  onRefreshData={handleRefreshProfile}
+                />
+              )}
 
-          {activeTab === 'profile' && (
-            <ProfileView
-              profile={profile}
-              words={words}
-              rules={grammarRules}
-              onOpenSettings={() => setIsSettingsOpen(true)}
-              onNavigateToVocab={() => setActiveTab('vocab')}
-              onNavigateToGrammar={() => setActiveTab('grammar')}
-            />
+              {activeTab === 'profile' && (
+                <ProfileView
+                  profile={profile}
+                  words={words}
+                  grammarRules={grammarRules}
+                  onOpenSettings={() => setIsSettingsOpen(true)}
+                  onNavigateTab={(tab) => setActiveTab(tab)}
+                />
+              )}
+            </>
           )}
         </main>
       </div>
@@ -172,12 +238,32 @@ export const App: React.FC = () => {
         <SettingsModal
           profile={profile}
           supabaseHealth={supabaseHealth}
-          onUpdateProfile={handleUpdateProfile}
-          onRefreshHealth={handleRefreshHealth}
+          backendHealth={backendHealth}
+          onUpdateProfile={(updated) => setProfile(updated)}
+          onRefreshHealth={loadInitialData}
           onClose={() => setIsSettingsOpen(false)}
         />
       )}
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        onSuccess={() => {
+          handleRefreshProfile();
+        }}
+      />
     </div>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <LanguageProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </LanguageProvider>
   );
 };
 

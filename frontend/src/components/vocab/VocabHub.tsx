@@ -16,6 +16,7 @@ import { SpellingTrainer } from './SpellingTrainer';
 import { ArticleRushTrainer } from './ArticleRushTrainer';
 import { SessionSummary } from './SessionSummary';
 import { storageService } from '../../services/storageService';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 interface Props {
   words: Word[];
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export const VocabHub: React.FC<Props> = ({ words, profile }) => {
+  const { t } = useTranslation();
   const [activeMode, setActiveMode] = useState<TrainerMode>('menu');
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
   const [selectedPos, setSelectedPos] = useState<string>('all');
@@ -80,7 +82,6 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
       });
     }
 
-    // Shuffle and apply limit
     const shuffled = [...list].sort(() => 0.5 - Math.random());
     return sessionLimit === 0 ? shuffled : shuffled.slice(0, sessionLimit);
   }, [words, selectedLevel, selectedPos, sessionLimit, onlyStarred, activeMode, wordProgressMap]);
@@ -142,7 +143,7 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
       <FlashcardTrainer
         words={filteredWords.length > 0 ? filteredWords : words.slice(0, 15)}
         profile={profile}
-        onFinish={(data) => handleSessionFinish('Karteikarten', data)}
+        onFinish={(data) => handleSessionFinish(t('mode.flashcards.title'), data)}
         onExit={handleExitToMenu}
       />
     );
@@ -154,7 +155,7 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
         words={filteredWords.length > 0 ? filteredWords : words.slice(0, 15)}
         allWordsPool={words}
         profile={profile}
-        onFinish={(data) => handleSessionFinish('Multiple-Choice Quiz', data)}
+        onFinish={(data) => handleSessionFinish(t('mode.quiz.title'), data)}
         onExit={handleExitToMenu}
       />
     );
@@ -165,7 +166,7 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
       <SpellingTrainer
         words={filteredWords.length > 0 ? filteredWords : words.slice(0, 15)}
         profile={profile}
-        onFinish={(data) => handleSessionFinish('Schreibübung (Spelling)', data)}
+        onFinish={(data) => handleSessionFinish(t('mode.spelling.title'), data)}
         onExit={handleExitToMenu}
       />
     );
@@ -186,7 +187,7 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
       <FlashcardTrainer
         words={filteredWords.length > 0 ? filteredWords : words.slice(0, 15)}
         profile={profile}
-        onFinish={(data) => handleSessionFinish('Fokus: Problemwörter', data)}
+        onFinish={(data) => handleSessionFinish(t('mode.weak.title'), data)}
         onExit={handleExitToMenu}
       />
     );
@@ -223,13 +224,13 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
                 letterSpacing: '0.05em',
               }}
             >
-              Wortschatz-Trainer
+              {t('vocab.badge_trainer')}
             </span>
             <h1 style={{ fontSize: '1.85rem', fontWeight: 800, marginTop: '0.2rem', letterSpacing: '-0.02em' }}>
-              Trainiere deinen deutschen Wortschatz
+              {t('vocab.title')}
             </h1>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '0.35rem' }}>
-              Wähle deinen bevorzugten Lernmodus und meistere Artikel, Bedeutungen und Schreibweisen.
+              {t('vocab.subtitle')}
             </p>
           </div>
 
@@ -247,7 +248,7 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
               <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                 {stats.total}
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Wörter Gesamt</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('vocab.words_total')}</div>
             </div>
 
             <div
@@ -262,7 +263,7 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
               <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-success)' }}>
                 {stats.mastered}
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Gemeistert</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('vocab.mastered')}</div>
             </div>
 
             <div
@@ -277,7 +278,7 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
               <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--accent-gold)' }}>
                 ★ {stats.starred}
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Favoriten</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('vocab.favorites')}</div>
             </div>
           </div>
         </div>
@@ -298,7 +299,7 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
             <Filter size={16} />
-            <span>Filter:</span>
+            <span>{t('vocab.filter')}</span>
           </div>
 
           {/* Level Filter */}
@@ -314,7 +315,7 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
               color: 'var(--text-primary)',
             }}
           >
-            <option value="all">Alle Stufen (A1-C1)</option>
+            <option value="all">{t('vocab.all_levels')}</option>
             <option value="A1">Niveau A1</option>
             <option value="A2">Niveau A2</option>
             <option value="B1">Niveau B1</option>
@@ -333,12 +334,12 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
               color: 'var(--text-primary)',
             }}
           >
-            <option value="all">Alle Wortarten</option>
-            <option value="noun">Nomen (Substantive)</option>
-            <option value="verb">Verben</option>
-            <option value="adjective">Adjektive</option>
-            <option value="adverb">Adverbien</option>
-            <option value="preposition">Präpositionen</option>
+            <option value="all">{t('vocab.all_pos')}</option>
+            <option value="noun">{t('vocab.pos_noun')}</option>
+            <option value="verb">{t('vocab.pos_verb')}</option>
+            <option value="adjective">{t('vocab.pos_adjective')}</option>
+            <option value="adverb">{t('vocab.pos_adverb')}</option>
+            <option value="preposition">{t('vocab.pos_preposition')}</option>
           </select>
 
           {/* Session Size */}
@@ -354,11 +355,11 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
               color: 'var(--text-primary)',
             }}
           >
-            <option value={10}>10 Wörter / Runde</option>
-            <option value={15}>15 Wörter / Runde</option>
-            <option value={25}>25 Wörter / Runde</option>
-            <option value={50}>50 Wörter / Runde</option>
-            <option value={0}>Alle passenden Wörter</option>
+            <option value={10}>10 {t('vocab.words_per_round')}</option>
+            <option value={15}>15 {t('vocab.words_per_round')}</option>
+            <option value={25}>25 {t('vocab.words_per_round')}</option>
+            <option value={50}>50 {t('vocab.words_per_round')}</option>
+            <option value={0}>{t('vocab.all_words')}</option>
           </select>
         </div>
 
@@ -380,7 +381,7 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
           }}
         >
           <Star size={15} fill={onlyStarred ? '#f59e0b' : 'none'} />
-          <span>Nur Favoriten</span>
+          <span>{t('vocab.only_favorites')}</span>
         </button>
       </div>
 
@@ -431,15 +432,15 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
                   borderRadius: 'var(--radius-full)',
                 }}
               >
-                Klassiker
+                {t('mode.flashcards.badge')}
               </span>
             </div>
 
             <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.4rem' }}>
-              Karteikarten (Flashcards)
+              {t('mode.flashcards.title')}
             </h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-              3D-Karten zum Umdrehen mit Aussprache, Beispielsätzen und Spaced-Repetition-Selbstbewertung.
+              {t('mode.flashcards.desc')}
             </p>
           </div>
 
@@ -454,7 +455,7 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
             }}
           >
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              {filteredWords.length} Wörter bereit
+              {filteredWords.length} {t('vocab.words_total')}
             </span>
             <div
               style={{
@@ -466,7 +467,7 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
                 fontSize: '0.85rem',
               }}
             >
-              <span>Starten</span>
+              <span>{t('vocab.start')}</span>
               <ArrowRight size={16} />
             </div>
           </div>
@@ -511,15 +512,15 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
                   borderRadius: 'var(--radius-full)',
                 }}
               >
-                Quiz
+                {t('mode.quiz.badge')}
               </span>
             </div>
 
             <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.4rem' }}>
-              Multiple-Choice Quiz
+              {t('mode.quiz.title')}
             </h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-              Finde aus 4 Optionen die richtige Übersetzung, sammle Serie-Boni und teste dein Tempo.
+              {t('mode.quiz.desc')}
             </p>
           </div>
 
@@ -533,7 +534,7 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
               borderTop: '1px solid var(--border-subtle)',
             }}
           >
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>4 Antwortoptionen</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>4 Options</span>
             <div
               style={{
                 display: 'flex',
@@ -544,7 +545,7 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
                 fontSize: '0.85rem',
               }}
             >
-              <span>Starten</span>
+              <span>{t('vocab.start')}</span>
               <ArrowRight size={16} />
             </div>
           </div>
@@ -589,15 +590,15 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
                   borderRadius: 'var(--radius-full)',
                 }}
               >
-                Schreiben
+                {t('mode.spelling.badge')}
               </span>
             </div>
 
             <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.4rem' }}>
-              Schreib-Trainer (Spelling)
+              {t('mode.spelling.title')}
             </h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-              Tippe das deutsche Wort mit praktischer Umlaute-Leiste (ä, ö, ü, ß) und Stufen-Hinweisen ein.
+              {t('mode.spelling.desc')}
             </p>
           </div>
 
@@ -611,7 +612,7 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
               borderTop: '1px solid var(--border-subtle)',
             }}
           >
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Inkl. Umlaut-Tastatur</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>ä, ö, ü, ß</span>
             <div
               style={{
                 display: 'flex',
@@ -622,7 +623,7 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
                 fontSize: '0.85rem',
               }}
             >
-              <span>Starten</span>
+              <span>{t('vocab.start')}</span>
               <ArrowRight size={16} />
             </div>
           </div>
@@ -667,15 +668,15 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
                   borderRadius: 'var(--radius-full)',
                 }}
               >
-                Speed-Game
+                {t('mode.rush.badge')}
               </span>
             </div>
 
             <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.4rem' }}>
-              Artikel-Rush (Der/Die/Das)
+              {t('mode.rush.title')}
             </h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-              Reagiere in 30 oder 60 Sekunden und triff den richtigen Artikel blitzschnell.
+              {t('mode.rush.desc')}
             </p>
           </div>
 
@@ -690,7 +691,7 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
             }}
           >
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              Rekord: {profile.rushHighScore || 0} Pkt
+              {t('rush.score')}: {profile.rushHighScore || 0}
             </span>
             <div
               style={{
@@ -702,7 +703,7 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
                 fontSize: '0.85rem',
               }}
             >
-              <span>Spielen</span>
+              <span>{t('vocab.play')}</span>
               <ArrowRight size={16} />
             </div>
           </div>
@@ -747,15 +748,15 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
                   borderRadius: 'var(--radius-full)',
                 }}
               >
-                Gezielt
+                {t('mode.weak.badge')}
               </span>
             </div>
 
             <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.4rem' }}>
-              Fokus: Problemwörter
+              {t('mode.weak.title')}
             </h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-              Wiederhole gezielt Wörter, bei denen du Fehler gemacht hast oder die du markiert hast.
+              {t('mode.weak.desc')}
             </p>
           </div>
 
@@ -769,7 +770,7 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
               borderTop: '1px solid var(--border-subtle)',
             }}
           >
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Gezielte Wiederholung</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('vocab.badge_trainer')}</span>
             <div
               style={{
                 display: 'flex',
@@ -780,7 +781,7 @@ export const VocabHub: React.FC<Props> = ({ words, profile }) => {
                 fontSize: '0.85rem',
               }}
             >
-              <span>Starten</span>
+              <span>{t('vocab.start')}</span>
               <ArrowRight size={16} />
             </div>
           </div>

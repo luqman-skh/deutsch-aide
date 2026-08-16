@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import {
   Search,
+  Filter,
   Star,
-  BookA,
+  ArrowUpDown,
+  BookOpen,
 } from 'lucide-react';
-import type { Word, UserProfile, WordProgress } from '../../types';
+import type { Word, UserProfile, Gender } from '../../types';
 import { GenderBadge } from '../common/GenderBadge';
 import { PosBadge } from '../common/PosBadge';
 import { CefrBadge } from '../common/CefrBadge';
@@ -12,52 +14,62 @@ import { SpeakerButton } from '../common/SpeakerButton';
 import { WordDetailModal } from './WordDetailModal';
 import { storageService } from '../../services/storageService';
 import { playSfx } from '../../utils/audio';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 interface Props {
   words: Word[];
   profile: UserProfile;
+  onRefreshData?: () => void;
 }
 
-export const LexiconExplorer: React.FC<Props> = ({ words, profile }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPos, setSelectedPos] = useState<string>('all');
+export const LexiconExplorer: React.FC<Props> = ({
+  words,
+  profile,
+}) => {
+  const { t } = useTranslation();
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedGender, setSelectedGender] = useState<string>('all');
+  const [selectedPos, setSelectedPos] = useState<string>('all');
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'mastered' | 'learning' | 'starred' | 'unseen'>('all');
+  const [masteryFilter, setMasteryFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'frequency' | 'alpha-asc' | 'alpha-desc' | 'practiced'>('frequency');
-  const [page, setPage] = useState(1);
-  const itemsPerPage = 30;
 
   const [selectedWord, setSelectedWord] = useState<Word | null>(null);
-  const [progressMap, setProgressMap] = useState<Record<string, WordProgress>>(() =>
-    storageService.getAllWordProgress()
-  );
+  const [displayCount, setDisplayCount] = useState(30);
 
-  const handleToggleStar = (german: string) => {
-    storageService.toggleStarWord(german);
-    setProgressMap(storageService.getAllWordProgress());
+  const wordProgressMap = useMemo(() => {
+    return storageService.getAllWordProgress();
+  }, [profile, selectedWord]);
+
+  // Starred map
+  const starredMap = useMemo(() => {
+    const map: Record<string, boolean> = {};
+    words.forEach((w) => {
+      const p = wordProgressMap[w.german.toLowerCase().trim()];
+      if (p?.starred) map[w.german] = true;
+    });
+    return map;
+  }, [words, wordProgressMap]);
+
+  const handleToggleStar = (e: React.MouseEvent, word: Word) => {
+    e.stopPropagation();
+    storageService.toggleStarWord(word.german);
     playSfx('click', profile.soundEffects);
+    setSelectedWord(selectedWord ? { ...selectedWord } : null);
   };
 
+  // Filter words
   const filteredWords = useMemo(() => {
     return words.filter((w) => {
-      const key = w.german.toLowerCase().trim();
-      const p = progressMap[key];
+      const p = wordProgressMap[w.german.toLowerCase().trim()];
+      const isStarred = Boolean(p?.starred);
+      const mastery = p?.mastery || 0;
 
-      // Search match
-      if (searchTerm.trim()) {
-        const q = searchTerm.toLowerCase();
-        const matchDe = w.german.toLowerCase().includes(q);
-        const matchEn = w.english.toLowerCase().includes(q);
-        const matchTrans = (w.all_translations || '').toLowerCase().includes(q);
-        const matchEx = (w.example_de || '').toLowerCase().includes(q);
-        if (!matchDe && !matchEn && !matchTrans && !matchEx) return false;
-      }
-
-      // POS filter
-      if (selectedPos !== 'all' && (w.pos || '').toLowerCase() !== selectedPos) {
-        return false;
-      }
+      // Mastery filter
+      if (masteryFilter === 'starred' && !isStarred) return false;
+      if (masteryFilter === 'mastered' && mastery < 3) return false;
+      if (masteryFilter === 'learning' && (mastery === 0 || mastery >= 3)) return false;
+      if (masteryFilter === 'unseen' && mastery > 0) return false;
 
       // Gender filter
       if (selectedGender !== 'all') {
@@ -66,49 +78,62 @@ export const LexiconExplorer: React.FC<Props> = ({ words, profile }) => {
         if (selectedGender !== 'none' && g !== selectedGender) return false;
       }
 
+      // POS filter
+      if (selectedPos !== 'all') {
+        const pos = (w.pos || '').toLowerCase();
+        if (!pos.includes(selectedPos)) return false;
+      }
+
       // Level filter
       if (selectedLevel !== 'all' && (w.cefr_level || 'A1') !== selectedLevel) {
         return false;
       }
 
-      // Status filter
-      if (statusFilter === 'starred' && !p?.starred) return false;
-      if (statusFilter === 'mastered' && (!p || p.mastery < 3)) return false;
-      if (statusFilter === 'learning' && (!p || p.mastery === 0 || p.mastery >= 3)) return false;
-      if (statusFilter === 'unseen' && p && p.timesReviewed > 0) return false;
+      // Search query
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const inGerman = w.german?.toLowerCase().includes(q);
+        const inEnglish = w.english?.toLowerCase().includes(q);
+        const inTranslations = w.all_translations?.toLowerCase().includes(q);
+        const inExample = w.example_de?.toLowerCase().includes(q);
+
+        if (!inGerman && !inEnglish && !inTranslations && !inExample) {
+          return false;
+        }
+      }
 
       return true;
     });
-  }, [words, searchTerm, selectedPos, selectedGender, selectedLevel, statusFilter, progressMap]);
+  }, [words, wordProgressMap, masteryFilter, selectedGender, selectedPos, selectedLevel, searchQuery]);
 
   // Sort words
   const sortedWords = useMemo(() => {
-    return [...filteredWords].sort((a, b) => {
-      if (sortBy === 'frequency') {
-        return (a.frequency_rank || 9999) - (b.frequency_rank || 9999);
-      }
-      if (sortBy === 'alpha-asc') {
-        return a.german.localeCompare(b.german, 'de');
-      }
-      if (sortBy === 'alpha-desc') {
-        return b.german.localeCompare(a.german, 'de');
-      }
-      if (sortBy === 'practiced') {
-        const pA = progressMap[a.german.toLowerCase().trim()]?.timesReviewed || 0;
-        const pB = progressMap[b.german.toLowerCase().trim()]?.timesReviewed || 0;
-        return pB - pA;
-      }
-      return 0;
-    });
-  }, [filteredWords, sortBy, progressMap]);
+    const list = [...filteredWords];
 
-  const paginatedList = useMemo(() => {
-    return sortedWords.slice(0, page * itemsPerPage);
-  }, [sortedWords, page]);
+    if (sortBy === 'frequency') {
+      list.sort((a, b) => (a.frequency_rank || 9999) - (b.frequency_rank || 9999));
+    } else if (sortBy === 'alpha-asc') {
+      list.sort((a, b) => a.german.localeCompare(b.german, 'de'));
+    } else if (sortBy === 'alpha-desc') {
+      list.sort((a, b) => b.german.localeCompare(a.german, 'de'));
+    } else if (sortBy === 'practiced') {
+      list.sort((a, b) => {
+        const pA = wordProgressMap[a.german.toLowerCase().trim()]?.timesReviewed || 0;
+        const pB = wordProgressMap[b.german.toLowerCase().trim()]?.timesReviewed || 0;
+        return pB - pA;
+      });
+    }
+
+    return list;
+  }, [filteredWords, sortBy, wordProgressMap]);
+
+  const displayedWords = useMemo(() => {
+    return sortedWords.slice(0, displayCount);
+  }, [sortedWords, displayCount]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Top Banner */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+      {/* Header Banner */}
       <div
         className="glass-panel"
         style={{
@@ -126,17 +151,17 @@ export const LexiconExplorer: React.FC<Props> = ({ words, profile }) => {
             letterSpacing: '0.05em',
           }}
         >
-          Wortschatz-Lexikon & Suche
+          {t('lexicon.badge')}
         </span>
         <h1 style={{ fontSize: '1.85rem', fontWeight: 800, marginTop: '0.2rem', letterSpacing: '-0.02em' }}>
-          Deutsches Wörterbuch ({words.length} Wörter)
+          {t('lexicon.title')}
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '0.35rem' }}>
-          Durchsuche den gesamten Wortschatz nach Bedeutungen, Artikeln, Beispielsätzen und Wortarten.
+          {t('lexicon.subtitle')}
         </p>
       </div>
 
-      {/* Filter and Search Bar */}
+      {/* Search & Filter Controls */}
       <div
         className="glass-panel"
         style={{
@@ -146,403 +171,314 @@ export const LexiconExplorer: React.FC<Props> = ({ words, profile }) => {
           gap: '1rem',
         }}
       >
-        {/* Search row */}
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <div style={{ position: 'relative', flex: '1 1 300px' }}>
-            <Search
-              size={18}
-              style={{
-                position: 'absolute',
-                left: '1rem',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: 'var(--text-muted)',
-              }}
-            />
-            <input
-              type="text"
-              value={searchTerm}
+        {/* Search input */}
+        <div style={{ position: 'relative', width: '100%' }}>
+          <Search
+            size={18}
+            style={{
+              position: 'absolute',
+              left: '1rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'var(--text-muted)',
+            }}
+          />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setDisplayCount(30);
+            }}
+            placeholder={t('lexicon.search_placeholder')}
+            style={{
+              width: '100%',
+              padding: '0.75rem 1rem 0.75rem 2.6rem',
+              borderRadius: 'var(--radius-md)',
+              backgroundColor: 'var(--bg-tertiary)',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--text-primary)',
+              fontSize: '0.92rem',
+              outline: 'none',
+            }}
+          />
+        </div>
+
+        {/* Filter dropdowns */}
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '0.75rem',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+              <Filter size={15} />
+              <span>{t('vocab.filter')}</span>
+            </div>
+
+            {/* Gender Filter */}
+            <select
+              value={selectedGender}
               onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setPage(1);
+                setSelectedGender(e.target.value);
+                setDisplayCount(30);
               }}
-              placeholder="Auf Deutsch oder Englisch suchen..."
               style={{
-                width: '100%',
-                padding: '0.65rem 1rem 0.65rem 2.6rem',
+                padding: '0.4rem 0.65rem',
                 borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--bg-tertiary)',
                 border: '1px solid var(--border-subtle)',
+                fontSize: '0.85rem',
                 color: 'var(--text-primary)',
-                fontSize: '0.9rem',
-                outline: 'none',
               }}
-            />
+            >
+              <option value="all">{t('lexicon.all_articles')}</option>
+              <option value="der">der (Maskulin)</option>
+              <option value="die">die (Feminin)</option>
+              <option value="das">das (Neutrum)</option>
+              <option value="none">{t('lexicon.no_article')}</option>
+            </select>
+
+            {/* POS Filter */}
+            <select
+              value={selectedPos}
+              onChange={(e) => {
+                setSelectedPos(e.target.value);
+                setDisplayCount(30);
+              }}
+              style={{
+                padding: '0.4rem 0.65rem',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--bg-tertiary)',
+                border: '1px solid var(--border-subtle)',
+                fontSize: '0.85rem',
+                color: 'var(--text-primary)',
+              }}
+            >
+              <option value="all">{t('vocab.all_pos')}</option>
+              <option value="noun">{t('vocab.pos_noun')}</option>
+              <option value="verb">{t('vocab.pos_verb')}</option>
+              <option value="adjective">{t('vocab.pos_adjective')}</option>
+              <option value="adverb">{t('vocab.pos_adverb')}</option>
+              <option value="preposition">{t('vocab.pos_preposition')}</option>
+            </select>
+
+            {/* Level Filter */}
+            <select
+              value={selectedLevel}
+              onChange={(e) => {
+                setSelectedLevel(e.target.value);
+                setDisplayCount(30);
+              }}
+              style={{
+                padding: '0.4rem 0.65rem',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--bg-tertiary)',
+                border: '1px solid var(--border-subtle)',
+                fontSize: '0.85rem',
+                color: 'var(--text-primary)',
+              }}
+            >
+              <option value="all">{t('vocab.all_levels')}</option>
+              <option value="A1">A1</option>
+              <option value="A2">A2</option>
+              <option value="B1">B1</option>
+            </select>
+
+            {/* Mastery status */}
+            <select
+              value={masteryFilter}
+              onChange={(e) => {
+                setMasteryFilter(e.target.value);
+                setDisplayCount(30);
+              }}
+              style={{
+                padding: '0.4rem 0.65rem',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--bg-tertiary)',
+                border: '1px solid var(--border-subtle)',
+                fontSize: '0.85rem',
+                color: 'var(--text-primary)',
+              }}
+            >
+              <option value="all">Alle Status</option>
+              <option value="starred">★ Favoriten</option>
+              <option value="mastered">✓ Gemeistert</option>
+              <option value="learning">{t('lexicon.status_learning')}</option>
+              <option value="unseen">{t('lexicon.status_unseen')}</option>
+            </select>
           </div>
 
-          {/* POS Filter */}
-          <select
-            value={selectedPos}
-            onChange={(e) => {
-              setSelectedPos(e.target.value);
-              setPage(1);
-            }}
-            style={{
-              padding: '0.65rem 0.85rem',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: 'var(--bg-tertiary)',
-              border: '1px solid var(--border-subtle)',
-              fontSize: '0.85rem',
-              color: 'var(--text-primary)',
-              flex: '1 1 140px',
-            }}
-          >
-            <option value="all">Alle Wortarten</option>
-            <option value="noun">Nomen</option>
-            <option value="verb">Verben</option>
-            <option value="adjective">Adjektive</option>
-            <option value="adverb">Adverbien</option>
-            <option value="preposition">Präpositionen</option>
-            <option value="pronoun">Pronomen</option>
-          </select>
-
-          {/* Gender Filter */}
-          <select
-            value={selectedGender}
-            onChange={(e) => {
-              setSelectedGender(e.target.value);
-              setPage(1);
-            }}
-            style={{
-              padding: '0.65rem 0.85rem',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: 'var(--bg-tertiary)',
-              border: '1px solid var(--border-subtle)',
-              fontSize: '0.85rem',
-              color: 'var(--text-primary)',
-              width: '130px',
-            }}
-          >
-            <option value="all">Alle Artikel</option>
-            <option value="der">der (Maskulin)</option>
-            <option value="die">die (Feminin)</option>
-            <option value="das">das (Neutrum)</option>
-            <option value="none">Ohne Artikel</option>
-          </select>
-
-          {/* CEFR Level Filter */}
-          <select
-            value={selectedLevel}
-            onChange={(e) => {
-              setSelectedLevel(e.target.value);
-              setPage(1);
-            }}
-            style={{
-              padding: '0.65rem 0.85rem',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: 'var(--bg-tertiary)',
-              border: '1px solid var(--border-subtle)',
-              fontSize: '0.85rem',
-              color: 'var(--text-primary)',
-              width: '120px',
-            }}
-          >
-            <option value="all">Alle Stufen</option>
-            <option value="A1">Niveau A1</option>
-            <option value="A2">Niveau A2</option>
-            <option value="B1">Niveau B1</option>
-          </select>
-
-          {/* Sort By */}
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            style={{
-              padding: '0.65rem 0.85rem',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: 'var(--bg-tertiary)',
-              border: '1px solid var(--border-subtle)',
-              fontSize: '0.85rem',
-              color: 'var(--text-primary)',
-              width: '170px',
-            }}
-          >
-            <option value="frequency">Sortierung: Häufigkeit</option>
-            <option value="alpha-asc">Alphabetisch: A → Z</option>
-            <option value="alpha-desc">Alphabetisch: Z → A</option>
-            <option value="practiced">Meist geübt</option>
-          </select>
+          {/* Sort Dropdown */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <ArrowUpDown size={15} color="var(--text-muted)" />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              style={{
+                padding: '0.4rem 0.65rem',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--bg-tertiary)',
+                border: '1px solid var(--border-subtle)',
+                fontSize: '0.85rem',
+                color: 'var(--text-primary)',
+              }}
+            >
+              <option value="frequency">{t('lexicon.sort_frequency')}</option>
+              <option value="alpha-asc">{t('lexicon.sort_alpha_asc')}</option>
+              <option value="alpha-desc">{t('lexicon.sort_alpha_desc')}</option>
+              <option value="practiced">{t('lexicon.sort_practiced')}</option>
+            </select>
+          </div>
         </div>
+      </div>
 
-        {/* Status Filter Pills */}
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginRight: '0.25rem' }}>
-            Lernstatus:
+      {/* Word Grid Results */}
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', padding: '0 0.25rem' }}>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            <strong>{filteredWords.length}</strong> {t('lexicon.words_found')}
           </span>
-
-          <button
-            type="button"
-            onClick={() => setStatusFilter('all')}
-            style={{
-              padding: '0.35rem 0.75rem',
-              borderRadius: 'var(--radius-full)',
-              backgroundColor: statusFilter === 'all' ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
-              color: statusFilter === 'all' ? '#0b0f17' : 'var(--text-secondary)',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-            }}
-          >
-            Alle
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setStatusFilter('starred')}
-            style={{
-              padding: '0.35rem 0.75rem',
-              borderRadius: 'var(--radius-full)',
-              backgroundColor: statusFilter === 'starred' ? 'var(--accent-gold)' : 'var(--bg-tertiary)',
-              color: statusFilter === 'starred' ? '#0b0f17' : 'var(--text-secondary)',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-            }}
-          >
-            ★ Favoriten
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setStatusFilter('mastered')}
-            style={{
-              padding: '0.35rem 0.75rem',
-              borderRadius: 'var(--radius-full)',
-              backgroundColor: statusFilter === 'mastered' ? 'var(--color-success)' : 'var(--bg-tertiary)',
-              color: statusFilter === 'mastered' ? '#ffffff' : 'var(--text-secondary)',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-            }}
-          >
-            ✓ Gemeistert
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setStatusFilter('learning')}
-            style={{
-              padding: '0.35rem 0.75rem',
-              borderRadius: 'var(--radius-full)',
-              backgroundColor: statusFilter === 'learning' ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
-              color: statusFilter === 'learning' ? '#0b0f17' : 'var(--text-secondary)',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-            }}
-          >
-            In Bearbeitung
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setStatusFilter('unseen')}
-            style={{
-              padding: '0.35rem 0.75rem',
-              borderRadius: 'var(--radius-full)',
-              backgroundColor: statusFilter === 'unseen' ? 'var(--bg-elevated)' : 'var(--bg-tertiary)',
-              color: statusFilter === 'unseen' ? 'var(--text-primary)' : 'var(--text-secondary)',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-            }}
-          >
-            Ungeübt
-          </button>
         </div>
-      </div>
 
-      {/* Words Count */}
-      <div style={{ padding: '0 0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-        {sortedWords.length} Wörter gefunden
-      </div>
+        {displayedWords.length === 0 ? (
+          <div
+            className="glass-panel"
+            style={{
+              padding: '3rem 2rem',
+              textAlign: 'center',
+              color: 'var(--text-muted)',
+            }}
+          >
+            <BookOpen size={40} style={{ margin: '0 auto 1rem auto', opacity: 0.5 }} />
+            <h3 style={{ fontSize: '1.15rem', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+              {t('lexicon.no_words')}
+            </h3>
+            <p style={{ fontSize: '0.85rem', maxWidth: '400px', margin: '0 auto 1rem auto' }}>
+              {t('lexicon.no_words_desc')}
+            </p>
+          </div>
+        ) : (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+              gap: '1rem',
+            }}
+          >
+            {displayedWords.map((word) => {
+              const p = wordProgressMap[word.german.toLowerCase().trim()];
+              const isStarred = Boolean(starredMap[word.german]);
+              const timesPracticed = p?.timesReviewed || 0;
 
-      {/* Words Grid */}
-      {paginatedList.length > 0 ? (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: '1rem',
-          }}
-        >
-          {paginatedList.map((w, idx) => {
-            const key = w.german.toLowerCase().trim();
-            const p = progressMap[key];
-            const isStarred = Boolean(p?.starred);
+              return (
+                <div
+                  key={word.id || word.german}
+                  className="glass-panel-interactive"
+                  onClick={() => setSelectedWord(word)}
+                  style={{
+                    padding: '1.15rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <GenderBadge gender={word.gender as Gender} size="sm" showLabel />
+                        <PosBadge pos={word.pos} size="sm" />
+                      </div>
 
-            return (
-              <div
-                key={idx}
-                className="glass-panel-interactive"
-                onClick={() => setSelectedWord(w)}
-                style={{
-                  padding: '1.15rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  cursor: 'pointer',
-                  minHeight: '140px',
-                }}
-              >
-                <div>
-                  {/* Badges & Speaker */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <SpeakerButton
+                          text={`${word.gender ? word.gender + ' ' : ''}${word.german}`}
+                          rate={profile.speechSpeed}
+                          size={15}
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => handleToggleStar(e, word)}
+                          style={{
+                            padding: '0.25rem',
+                            color: isStarred ? 'var(--accent-gold)' : 'var(--text-muted)',
+                          }}
+                          title={isStarred ? 'Gemerkt' : 'Zu Favoriten'}
+                        >
+                          <Star size={16} fill={isStarred ? '#f59e0b' : 'none'} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
+                      {word.german}
+                    </h3>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--accent-primary)', fontWeight: 600 }}>
+                      {word.english}
+                    </p>
+                  </div>
+
                   <div
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      marginBottom: '0.5rem',
+                      marginTop: '1rem',
+                      paddingTop: '0.5rem',
+                      borderTop: '1px solid var(--border-subtle)',
+                      fontSize: '0.75rem',
+                      color: 'var(--text-muted)',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                      <GenderBadge gender={w.gender} size="sm" />
-                      <PosBadge pos={w.pos} size="sm" />
-                      <CefrBadge level={w.cefr_level || 'A1'} size="sm" />
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                      <SpeakerButton
-                        text={`${w.gender ? w.gender + ' ' : ''}${w.german}`}
-                        rate={profile.speechSpeed}
-                        size={15}
-                      />
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToggleStar(w.german);
-                        }}
-                        style={{
-                          padding: '0.3rem',
-                          borderRadius: 'var(--radius-full)',
-                          backgroundColor: isStarred ? 'var(--accent-gold-subtle)' : 'transparent',
-                          color: isStarred ? 'var(--accent-gold)' : 'var(--text-muted)',
-                        }}
-                      >
-                        <Star size={15} fill={isStarred ? '#f59e0b' : 'none'} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* German Word */}
-                  <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2 }}>
-                    {w.gender && (
-                      <span
-                        style={{
-                          fontSize: '0.9rem',
-                          fontWeight: 700,
-                          marginRight: '0.35rem',
-                          color:
-                            w.gender === 'der'
-                              ? 'var(--color-der)'
-                              : w.gender === 'die'
-                              ? 'var(--color-die)'
-                              : 'var(--color-das)',
-                        }}
-                      >
-                        {w.gender}
-                      </span>
-                    )}
-                    {w.german}
-                  </div>
-
-                  {/* English Translation */}
-                  <div style={{ fontSize: '0.9rem', color: 'var(--accent-primary)', fontWeight: 600, marginTop: '0.25rem' }}>
-                    {w.english}
+                    <span>
+                      {timesPracticed > 0 ? `${timesPracticed} ${t('lexicon.times_practiced')}` : t('lexicon.new')}
+                    </span>
+                    <CefrBadge level={word.cefr_level || 'A1'} size="sm" />
                   </div>
                 </div>
+              );
+            })}
+          </div>
+        )}
 
-                {/* Bottom Footer */}
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginTop: '0.75rem',
-                    paddingTop: '0.5rem',
-                    borderTop: '1px solid var(--border-subtle)',
-                    fontSize: '0.75rem',
-                    color: 'var(--text-muted)',
-                  }}
-                >
-                  <span>#{w.frequency_rank || idx + 1}</span>
-                  {p && p.mastery >= 3 ? (
-                    <span style={{ color: 'var(--color-success)', fontWeight: 700 }}>✓ Gemeistert</span>
-                  ) : p && p.timesReviewed > 0 ? (
-                    <span>{p.timesReviewed}x geübt</span>
-                  ) : (
-                    <span>Neu</span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="glass-panel" style={{ padding: '3rem 2rem', textAlign: 'center' }}>
-          <BookA size={36} color="var(--text-muted)" style={{ margin: '0 auto 1rem auto' }} />
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-            Keine Wörter gefunden
-          </h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-            Passe deine Suche oder Filtereinstellungen an.
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              setSearchTerm('');
-              setSelectedPos('all');
-              setSelectedGender('all');
-              setSelectedLevel('all');
-              setStatusFilter('all');
-            }}
-            style={{
-              padding: '0.6rem 1.25rem',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: 'var(--accent-primary)',
-              color: '#0b0f17',
-              fontWeight: 700,
-            }}
-          >
-            Filter zurücksetzen
-          </button>
-        </div>
-      )}
-
-      {/* Load More Button */}
-      {paginatedList.length < sortedWords.length && (
-        <button
-          type="button"
-          onClick={() => setPage((prev) => prev + 1)}
-          style={{
-            margin: '1.5rem auto 0 auto',
-            padding: '0.85rem 2.5rem',
-            borderRadius: 'var(--radius-md)',
-            backgroundColor: 'var(--bg-tertiary)',
-            border: '1px solid var(--border-medium)',
-            color: 'var(--text-primary)',
-            fontWeight: 700,
-            fontSize: '0.95rem',
-          }}
-        >
-          Weitere Wörter laden (+{Math.min(itemsPerPage, sortedWords.length - paginatedList.length)})
-        </button>
-      )}
+        {/* Load More Button */}
+        {displayedWords.length < filteredWords.length && (
+          <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+            <button
+              type="button"
+              onClick={() => setDisplayCount((prev) => prev + 30)}
+              style={{
+                padding: '0.75rem 1.5rem',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--bg-card)',
+                border: '1px solid var(--border-medium)',
+                color: 'var(--text-primary)',
+                fontWeight: 700,
+                fontSize: '0.9rem',
+              }}
+            >
+              {t('lexicon.load_more')} ({filteredWords.length - displayedWords.length} verbleibend)
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Word Detail Modal */}
       {selectedWord && (
         <WordDetailModal
           word={selectedWord}
-          progress={progressMap[selectedWord.german.toLowerCase().trim()]}
+          progress={wordProgressMap[selectedWord.german.toLowerCase().trim()]}
           profile={profile}
-          isStarred={Boolean(progressMap[selectedWord.german.toLowerCase().trim()]?.starred)}
-          onToggleStar={handleToggleStar}
+          isStarred={Boolean(starredMap[selectedWord.german])}
+          onToggleStar={(german) => {
+            storageService.toggleStarWord(german);
+            setSelectedWord({ ...selectedWord });
+          }}
           onClose={() => setSelectedWord(null)}
         />
       )}

@@ -264,6 +264,10 @@ class StorageService {
     return existing.learned;
   }
 
+  toggleLearnGrammar(ruleId: string): boolean {
+    return this.toggleLearnedRule(ruleId);
+  }
+
   toggleStarRule(ruleId: string): boolean {
     const all = this.getAllGrammarProgress();
     const existing = all[ruleId] || {
@@ -277,6 +281,10 @@ class StorageService {
     all[ruleId] = existing;
     this.saveAllGrammarProgress(all);
     return existing.starred;
+  }
+
+  toggleStarGrammar(ruleId: string): boolean {
+    return this.toggleStarRule(ruleId);
   }
 
   recordGrammarQuiz(ruleId: string, score: number): void {

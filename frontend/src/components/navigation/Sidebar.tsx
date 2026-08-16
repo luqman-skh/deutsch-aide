@@ -1,6 +1,7 @@
 import React from 'react';
 import { GraduationCap, BookOpen, BookA, User, Sparkles } from 'lucide-react';
 import type { ActiveTab } from '../../types';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 interface Props {
   activeTab: ActiveTab;
@@ -15,32 +16,34 @@ export const Sidebar: React.FC<Props> = ({
   starredWordsCount,
   totalWordsCount,
 }) => {
+  const { t } = useTranslation();
+
   const tabs = [
     {
       id: 'vocab' as ActiveTab,
-      label: 'Vokabeltrainer',
-      sublabel: 'Flashcards & Quizzes',
+      label: t('nav.vocab'),
+      sublabel: t('nav.vocab_sub'),
       icon: GraduationCap,
       badge: `${totalWordsCount}`,
     },
     {
       id: 'grammar' as ActiveTab,
-      label: 'Grammatikregeln',
-      sublabel: 'Rules & Exercises',
+      label: t('nav.grammar'),
+      sublabel: t('nav.grammar_sub'),
       icon: BookOpen,
       badge: '365+',
     },
     {
       id: 'lexicon' as ActiveTab,
-      label: 'Wortschatz / Lexicon',
-      sublabel: 'Search & Explorer',
+      label: t('nav.lexicon'),
+      sublabel: t('nav.lexicon_sub'),
       icon: BookA,
       badge: starredWordsCount > 0 ? `★ ${starredWordsCount}` : undefined,
     },
     {
       id: 'profile' as ActiveTab,
-      label: 'Mein Profil & Stats',
-      sublabel: 'Progress & Analytics',
+      label: t('nav.profile'),
+      sublabel: t('nav.profile_sub'),
       icon: User,
     },
   ];
@@ -68,7 +71,7 @@ export const Sidebar: React.FC<Props> = ({
               color: 'var(--text-muted)',
             }}
           >
-            Lernbereiche
+            {t('nav.learning_areas')}
           </span>
         </div>
 
@@ -140,11 +143,11 @@ export const Sidebar: React.FC<Props> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
             <Sparkles size={16} color="var(--accent-gold)" />
             <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-gold)' }}>
-              Lerntipp
+              {t('nav.tip')}
             </span>
           </div>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-            Lerne Nomen immer direkt mit ihrem Artikel (<strong>der</strong>, <strong>die</strong>, <strong>das</strong>), um die Deklinationen mühelos zu meistern!
+            {t('nav.tip_content')}
           </p>
         </div>
       </aside>

@@ -1,114 +1,81 @@
-# 🇩🇪 DeutschAide — Interaktiver Vokabel- & Grammatiktrainer
+# 🇩🇪 DeutschAide — Full-Stack German Vocabulary & Grammar Trainer
 
-**DeutschAide** ist eine moderne, hochperformante Webanwendung zum Erlernen der deutschen Sprache. Sie kombiniert einen vielseitigen **Wortschatz-Trainer**, einen umfangreichen **Grammatik-Kompass** und ein motivierendes **Lernprofil mit Gamification** (XP, Streaks, Stufen und Statistiken).
-
-Die Anwendung nutzt **React + TypeScript** im Frontend und **Supabase** als Cloud-Datenbank mit automatischer **Offline-Fallback-Resilienz** für nahtloses Lernen ohne Unterbrechungen.
+**DeutschAide** ist eine moderne, hochperformante Full-Stack-Webanwendung zum Erlernen der deutschen Sprache. Sie kombiniert einen **Python FastAPI Server**, ein reaktives **React + TypeScript Frontend**, **Supabase Cloud-Authentifizierung & Datenbank**, sowie ein vollständiges zweisprachiges Interface (**🇩🇪 Deutsch / 🇬🇧 English**).
 
 ---
 
-## 🌟 Hauptfunktionen (Core Features)
+## 🌟 Neue Features & Architektur
 
-### 1. 🎓 Wortschatz-Trainer (Vocab Trainer)
-- **🗂 3D-Karteikarten (Flashcards)**:
-  - 3D-Drehanimation (Klick oder `Leertaste`)
-  - Farbkodierte Artikel-Hervorhebung (**der** = Blau, **die** = Pink/Rot, **das** = Grün)
-  - Deutsche Sprachausgabe (Aussprache via Web Speech API)
-  - Beispielsätze mit zweisprachiger Übersetzung und Schlüsselwort-Highlight
-  - **Spaced-Repetition-System (SRS)**: Bewertung nach *Nochmals* (Taste 1), *Schwer* (Taste 2), *Gut* (Taste 3) und *Einfach* (Taste 4)
-- **❓ Multiple-Choice Quiz**:
-  - Dynamisch generierte 4-Optionen-Fragen
-  - Umschaltbar zwischen **Deutsch → Englisch** und **Englisch → Deutsch**
-  - Sofortiges Feedback, Serie-Multiplikatoren (`3x`, `5x`, `10x`) und XP-Boni
-- **✍️ Schreib-Trainer (Type-In Spelling)**:
-  - Wortschreibungsprüfung mit integrierter **Umlaute-Schnellleiste** (`ä`, `ö`, `ü`, `ß`, `Ä`, `Ö`, `Ü`)
-  - Stufenweises Hinweissystem (1. Stufe: Artikel & Anfangsbuchstabe, 2. Stufe: Wortkontur)
-- **⚡ Artikel-Rush (Der / Die / Das)**:
-  - Schnelligkeits-Minispiel (30 oder 60 Sekunden Timer)
-  - Große Tastatur-Hotkeys (`1/D` für der, `2/E` für die, `3/A` für das)
-  - Combo-Multiplikatoren und Highscore-Speicherung
-- **🎯 Gezieltes Fehlertraining (Problemwörter)**:
-  - Wiederhole gezielt Wörter mit hoher Fehlerquote oder gemerkte Favoriten
+### 1. 🐍 Python Backend Server (FastAPI)
+- **Moderne REST-API**:
+  - `/api/words`: Vokabelsuche, Paginierung, Filter nach Niveau (A1–C1), Wortart und Artikeln.
+  - `/api/grammar`: 365+ Grammatikregeln, Kategorien und Filter.
+  - `/api/auth`: Supabase JWT Token-Verifizierung & Benutzerstatus.
+  - `/api/progress`: Cloud-Synchronisation von XP, Streaks und Spaced-Repetition-Fortschritten.
+  - `/api/health`: Health-Check & Datenbankstatistiken.
+- **🤖 Zukunftssichere LLM-Architektur (AI Placeholder Router)**:
+  - `/api/ai/explain`, `/api/ai/correct`, `/api/ai/status`
+  - Strukturierte Pydantic-Schemas und modulare Architektur zur einfachen Anbindung von OpenAI, Google Gemini, Anthropic oder lokalem Ollama in der Zukunft.
 
 ---
 
-### 2. 📖 Grammatikregeln & Übungen (Grammatik-Kompass)
-- **365+ strukturierte Grammatikregeln**:
-  - Kategorisiert in über 30 Bereiche (Fälle/Kasus, Artikel, Adjektivdeklination, Verbkonjugation, Zeitformen, Präpositionen, Relativsätze, Satzbau, etc.)
-  - Filterbar nach CEFR-Niveau (**A1, A2, B1, B2, C1**)
-- **Detaillierte Regelkarten**:
-  - Zweisprachige Erläuterungen (Deutsch & Englisch)
-  - Praxisnahe Beispielsätze mit Audio-Aussprache
-  - Wichtige Merkhilfen, Tipps und Schlagwörter
-  - Status "Gelernt" mit Fortschrittsbalken und Favoriten-Markierung
-- **Interaktive Regel-Praxis**:
-  - Teste dein Verständnis jeder einzelnen Grammatikregel direkt in einer interaktiven Übung
+### 2. 🔐 Supabase Authentifizierung (Auth Layer)
+- **Anmelden & Registrieren**:
+  - Schnelle Registrierung mit E-Mail, Passwort und Nickname.
+  - Sichere Authentifizierung über Supabase Auth.
+  - Automatisches Cloud-Backup von Vokabel-Fortschritten und Streaks.
+  - **Gast-Modus**: Voll funktionsfähig auch ohne Login mit lokalem Speicher.
+  - Navbar-Badge mit Benutzer-Dropdown und Cloud-Sync-Status.
 
 ---
 
-### 3. 📚 Wortschatz-Lexikon (Wörterbuch & Suche)
-- Durchsuche den gesamten Wortschatz in Echtzeit auf Deutsch oder Englisch
-- Filter nach Wortart (Nomen, Verben, Adjektive, etc.), Artikel (**der / die / das**), CEFR-Stufe und Lernstatus
-- Sortierung nach Häufigkeitsrang, Alphabet oder Übungsfrequenz
-- Detailansicht mit allen Synonymen, Beispielen und Statistiken
+### 3. 🌐 Sprachumschaltung (🇩🇪 Deutsch / 🇬🇧 English)
+- **Vollständiges i18n-System**:
+  - Blitzschnelles Umschalten zwischen Deutsch und Englisch direkt in der Navbar (`🇩🇪 DE` / `🇬🇧 EN`) oder im Einstellungsmenü.
+  - Vollständige Übersetzung aller Module: Vokabeltrainer, Flashcards, Quiz, Rechtschreibung, Artikel-Rush, Grammatik-Kompass, Lexikon, Profil & Statistiken, und Auth-Dialoge.
 
 ---
 
-### 4. 👤 Profil & Lernfortschritt (Mein Profil)
-- **Gamification**:
-  - XP-System & Stufenaufstieg (z. B. *Anfänger* → *Wort-Entdecker* → *Deutsch-Profi* → *Grandmaster*)
-  - XP-Fortschrittsbalken zur nächsten Stufe
-  - Tägliche Lernserie (**Streak** mit Flammensymbol)
-  - Tagesziel-Verfolgung (z. B. 15 Wörter/Tag)
-- **7-Tage-Aktivitätsdiagramm**: Balkendiagramm der täglichen Lernaktivität
-- **Beherrschungsgrad**: Übersicht über gemeisterte, vertraute, in Bearbeitung befindliche und ungeübte Vokabeln
-- **Favoritensammlung**: Schnellzugriff auf gemerkte Vokabeln und Regeln
-- **Einstellungen**: Anpassung von Name, Zielniveau, Sprechgeschwindigkeit, Soundeffekten, Dark/Light-Theme und Supabase-Synchronisation
-
----
-
-## ☁️ Supabase-Integration & Offline-Fallback
-
-DeutschAide verbindet sich automatisch mit deiner Supabase-Instanz:
-- **Tabelle `german_words`**: Vokabeldatenbank mit Übersetzungen, Artikeln, Beispielen und Rängen
-- **Tabelle `grammar_rules`**: Grammatikdatenbank mit Kategorien, Regeln und Beispielen
-- **Offline-Resilienz**: Falls keine Internetverbindung besteht oder Tabellen leer sind, greift die App nahtlos auf die mitgelieferten Datensätze zu.
-- **In-App DB-Seeding**: Über den Einstellungsdialog (`⚙️`) kann die Datenbank mit einem Klick aus der UI befüllt werden.
+### 4. 🎓 Die 4 Lernmodule
+- **1. Wortschatz-Trainer**: 3D-Flashcards mit Audio (`de-DE`), Multiple-Choice-Quiz, Schreib-Trainer mit Umlaut-Tastatur (`ä`, `ö`, `ü`, `ß`), Artikel-Rush und Fehlertraining.
+- **2. Grammatik-Kompass**: 365+ strukturierte Regeln in 30+ Kategorien mit Beispielen, Audio und interaktivem Übungsquiz.
+- **3. Wortschatz-Lexikon**: Umfassendes Wörterbuch mit Artikelsuche, Sortierung und Favoriten.
+- **4. Profil & Gamification**: XP-Stufen (*Anfänger* → *Großmeister*), Tages-Streak, 7-Tage-Aktivitätsdiagramm und Beherrschungsgrad.
 
 ---
 
 ## 🚀 Schnellstart (Entwicklung & Start)
 
-### Voraussetzungen
-- **Node.js**: v18+ (empfohlen v20 oder v22)
-- **npm**: v9+
+### 1. Python Backend starten
+```powershell
+# In das Backend-Verzeichnis wechseln
+cd D:\GitHubRepos\deutsch-helper\backend
 
-### Frontend starten
-```bash
+# Server starten
+& "..\deutsch-project\Scripts\python.exe" run.py
+```
+- **API Server**: `http://localhost:8000`
+- **Interaktive Swagger API Docs**: `http://localhost:8000/docs`
+
+---
+
+### 2. Frontend starten
+```powershell
 # In das Frontend-Verzeichnis wechseln
-cd frontend
-
-# Abhängigkeiten installieren (falls noch nicht geschehen)
-npm install
+cd D:\GitHubRepos\deutsch-helper\frontend
 
 # Entwicklungsserver starten
 npm run dev
 ```
-
-Die Anwendung öffnet sich unter `http://localhost:5173`.
-
-### Produktions-Build erstellen
-```bash
-cd frontend
-npm run build
-```
+- **Frontend App**: `http://localhost:5173`
 
 ---
 
-## 🛠 Technologien & Architektur
+## 🛠 Technologien
 
+- **Backend**: Python 3.11+, FastAPI, Uvicorn, Pydantic, Supabase Python Client, PyJWT
 - **Frontend**: React 19, TypeScript, Vite
-- **Styling**: Modernes CSS-Designsystem (CSS-Variablen, Glassmorphism, 3D-Transforms, Responsive Breakpoints)
-- **Datenbank & Backend**: Supabase (`@supabase/supabase-js`)
-- **Audio & Sound**: Web Speech API (`de-DE` SpeechSynthesis) + Web Audio API (Synthetische Soundeffekte)
-- **Icons**: Lucide React
-- **Feier-Effekte**: Canvas Confetti
+- **Datenbank & Auth**: Supabase (`auth`, `german_words`, `grammar_rules`, `user_progress`)
+- **Internationalisierung**: React Context i18n (`de` / `en`)
+- **Styling**: Modern CSS Design System (CSS Variables, Glassmorphism, 3D Transforms)
+- **Audio**: Web Speech API (`de-DE`) + Web Audio API Synthesizer
