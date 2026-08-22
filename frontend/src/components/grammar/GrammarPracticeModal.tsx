@@ -69,26 +69,28 @@ export const GrammarPracticeModal: React.FC<Props> = ({ rule, profile, onClose }
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.75)',
-        backdropFilter: 'blur(6px)',
+        backgroundColor: 'rgba(5, 8, 15, 0.82)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
         zIndex: 100,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '1rem',
+        padding: '1.25rem',
       }}
       onClick={onClose}
     >
       <div
-        className="glass-panel animate-pop-in"
+        className="glass-panel animate-pop-in glow-edge"
         style={{
           width: '100%',
-          maxWidth: '560px',
-          padding: '2rem',
-          backgroundColor: 'var(--bg-secondary)',
+          maxWidth: '580px',
+          padding: '2.25rem',
+          backgroundColor: 'var(--bg-card-solid)',
           border: '1px solid var(--border-medium)',
           boxShadow: 'var(--shadow-xl)',
           position: 'relative',
+          borderRadius: 'var(--radius-xl)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -101,64 +103,77 @@ export const GrammarPracticeModal: React.FC<Props> = ({ rule, profile, onClose }
             top: '1.25rem',
             right: '1.25rem',
             color: 'var(--text-muted)',
-            padding: '0.25rem',
-            borderRadius: 'var(--radius-sm)',
+            padding: '0.4rem',
+            borderRadius: 'var(--radius-full)',
+            backgroundColor: 'var(--bg-tertiary)',
+            border: '1px solid var(--border-subtle)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          <X size={20} />
+          <X size={18} />
         </button>
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+          <span
+            style={{
+              fontSize: '0.74rem',
+              fontWeight: 800,
+              color: 'var(--accent-primary)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+            }}
+          >
             {rule.category_name}
           </span>
           <CefrBadge level={rule.cefr_levels[0] || 'A1'} size="sm" />
         </div>
 
-        <h3 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: '1rem' }}>
+        <h3 style={{ fontSize: '1.45rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.02em' }}>
           {rule.subcategory || rule.rule_german}
         </h3>
 
-        {/* Rule Summary */}
+        {/* Rule Summary Box */}
         <div
           style={{
-            padding: '0.85rem 1rem',
+            padding: '1rem 1.25rem',
             borderRadius: 'var(--radius-md)',
             backgroundColor: 'var(--bg-tertiary)',
             border: '1px solid var(--border-subtle)',
             marginBottom: '1.5rem',
           }}
         >
-          <div style={{ fontSize: '0.88rem', color: 'var(--text-primary)', fontWeight: 600, marginBottom: '0.25rem' }}>
+          <div style={{ fontSize: '0.94rem', color: 'var(--text-primary)', fontWeight: 700, marginBottom: '0.25rem' }}>
             {rule.rule_german}
           </div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+          <div style={{ fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
             {rule.rule_english}
           </div>
         </div>
 
         {/* Question Prompt */}
         <div style={{ marginBottom: '1.25rem' }}>
-          <div style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '0.75rem' }}>
+          <div style={{ fontSize: '0.95rem', fontWeight: 800, marginBottom: '0.85rem', color: 'var(--text-primary)' }}>
             Wähle das korrekte Anwendungsbeispiel:
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {exercise.options.map((opt, idx) => {
               const isSelected = selectedAnswer === idx;
-              let btnBg = 'var(--bg-card)';
+              let btnBg = 'var(--bg-tertiary)';
               let btnBorder = 'var(--border-subtle)';
               let btnColor = 'var(--text-primary)';
 
               if (isAnswered) {
                 if (opt.isCorrect) {
                   btnBg = 'var(--color-success-bg)';
-                  btnBorder = 'rgba(16, 185, 129, 0.4)';
+                  btnBorder = 'var(--color-success-border)';
                   btnColor = 'var(--color-success)';
                 } else if (isSelected) {
                   btnBg = 'var(--color-error-bg)';
-                  btnBorder = 'rgba(239, 68, 68, 0.4)';
+                  btnBorder = 'var(--color-error-border)';
                   btnColor = 'var(--color-error)';
                 }
               }
@@ -170,24 +185,27 @@ export const GrammarPracticeModal: React.FC<Props> = ({ rule, profile, onClose }
                   onClick={() => handleSelect(idx)}
                   disabled={isAnswered}
                   style={{
-                    padding: '0.85rem 1rem',
+                    padding: '1rem 1.25rem',
                     borderRadius: 'var(--radius-md)',
                     backgroundColor: btnBg,
                     border: `1.5px solid ${btnBorder}`,
                     color: btnColor,
-                    fontSize: '0.9rem',
+                    fontSize: '0.92rem',
                     textAlign: 'left',
-                    fontWeight: 500,
-                    lineHeight: 1.4,
+                    fontWeight: 600,
+                    lineHeight: 1.45,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    gap: '0.5rem',
+                    gap: '0.75rem',
+                    boxShadow: 'var(--shadow-sm)',
+                    cursor: isAnswered ? 'default' : 'pointer',
                   }}
+                  className={!isAnswered ? 'glass-panel-interactive' : ''}
                 >
                   <span>{opt.text}</span>
-                  {isAnswered && opt.isCorrect && <CheckCircle2 size={18} color="var(--color-success)" />}
-                  {isAnswered && isSelected && !opt.isCorrect && <XCircle size={18} color="var(--color-error)" />}
+                  {isAnswered && opt.isCorrect && <CheckCircle2 size={20} color="var(--color-success)" />}
+                  {isAnswered && isSelected && !opt.isCorrect && <XCircle size={20} color="var(--color-error)" />}
                 </button>
               );
             })}
@@ -199,35 +217,36 @@ export const GrammarPracticeModal: React.FC<Props> = ({ rule, profile, onClose }
           <div
             className="glass-panel animate-fade-in"
             style={{
-              padding: '1rem',
+              padding: '1.1rem 1.25rem',
               borderRadius: 'var(--radius-md)',
               backgroundColor: isCorrectSelection ? 'var(--color-success-bg)' : 'var(--color-error-bg)',
-              border: `1px solid ${isCorrectSelection ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
-              marginBottom: '1.25rem',
+              border: `1px solid ${isCorrectSelection ? 'var(--color-success-border)' : 'var(--color-error-border)'}`,
+              marginBottom: '1.5rem',
             }}
           >
-            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: isCorrectSelection ? 'var(--color-success)' : 'var(--color-error)' }}>
+            <div style={{ fontWeight: 800, fontSize: '0.95rem', color: isCorrectSelection ? 'var(--color-success)' : 'var(--color-error)' }}>
               {isCorrectSelection ? '✓ Richtig verstanden! (+20 XP)' : '✕ Erklärung beachten:'}
             </div>
-            <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+            <div style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', marginTop: '0.35rem', lineHeight: 1.45 }}>
               {selectedAnswer !== null && exercise.options[selectedAnswer]?.explanation}
             </div>
           </div>
         )}
 
-        {/* Close / Next button */}
+        {/* Close Button */}
         {isAnswered && (
           <button
             type="button"
             onClick={onClose}
             style={{
               width: '100%',
-              padding: '0.85rem',
+              padding: '1rem',
               borderRadius: 'var(--radius-md)',
               backgroundColor: 'var(--accent-primary)',
               color: '#0b0f17',
-              fontWeight: 700,
-              fontSize: '0.95rem',
+              fontWeight: 900,
+              fontSize: '1rem',
+              boxShadow: '0 4px 14px rgba(56, 189, 248, 0.4)',
             }}
           >
             Fertigstellen & Schließen

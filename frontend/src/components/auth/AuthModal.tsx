@@ -32,12 +32,12 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
     setSuccessMsg(null);
 
     if (!email || !password) {
-      setErrorMsg('Please enter both email and password.');
+      setErrorMsg('Bitte E-Mail und Passwort eingeben.');
       return;
     }
 
     if (mode === 'signup' && password.length < 6) {
-      setErrorMsg('Password must be at least 6 characters.');
+      setErrorMsg('Das Passwort muss mindestens 6 Zeichen lang sein.');
       return;
     }
 
@@ -85,26 +85,28 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.75)',
-        backdropFilter: 'blur(6px)',
+        backgroundColor: 'rgba(5, 8, 15, 0.82)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
         zIndex: 100,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '1rem',
+        padding: '1.25rem',
       }}
       onClick={onClose}
     >
       <div
-        className="glass-panel animate-pop-in"
+        className="glass-panel animate-pop-in glow-edge"
         style={{
           width: '100%',
-          maxWidth: '460px',
-          padding: '2.25rem',
-          backgroundColor: 'var(--bg-secondary)',
+          maxWidth: '480px',
+          padding: '2.5rem 2.25rem',
+          backgroundColor: 'var(--bg-card-solid)',
           border: '1px solid var(--border-medium)',
           boxShadow: 'var(--shadow-xl)',
           position: 'relative',
+          borderRadius: 'var(--radius-xl)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -117,35 +119,41 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
             top: '1.25rem',
             right: '1.25rem',
             color: 'var(--text-muted)',
-            padding: '0.25rem',
+            padding: '0.4rem',
+            borderRadius: 'var(--radius-full)',
+            backgroundColor: 'var(--bg-tertiary)',
+            border: '1px solid var(--border-subtle)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          <X size={20} />
+          <X size={18} />
         </button>
 
         {/* Brand Icon Header */}
-        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
           <div
             style={{
-              width: '54px',
-              height: '54px',
-              borderRadius: 'var(--radius-md)',
-              background: 'linear-gradient(135deg, var(--accent-primary), #a855f7)',
+              width: '60px',
+              height: '60px',
+              borderRadius: 'var(--radius-lg)',
+              background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #06b6d4 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto 1rem auto',
+              margin: '0 auto 1.15rem auto',
               color: '#ffffff',
-              boxShadow: 'var(--shadow-sm)',
+              boxShadow: '0 4px 16px rgba(37, 99, 235, 0.35)',
             }}
           >
-            <ShieldCheck size={28} />
+            <ShieldCheck size={32} />
           </div>
 
-          <h2 style={{ fontSize: '1.45rem', fontWeight: 800, marginBottom: '0.35rem' }}>
+          <h2 style={{ fontSize: '1.65rem', fontWeight: 900, marginBottom: '0.35rem', letterSpacing: '-0.02em' }}>
             {mode === 'signin' ? t('auth.sign_in_title') : t('auth.sign_up_title')}
           </h2>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+          <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.45 }}>
             {mode === 'signin' ? t('auth.sign_in_desc') : t('auth.sign_up_desc')}
           </p>
         </div>
@@ -169,12 +177,12 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
             }}
             style={{
               flex: 1,
-              padding: '0.5rem',
+              padding: '0.6rem',
               borderRadius: 'var(--radius-sm)',
-              backgroundColor: mode === 'signin' ? 'var(--bg-card)' : 'transparent',
+              backgroundColor: mode === 'signin' ? 'var(--bg-card-solid)' : 'transparent',
               color: mode === 'signin' ? 'var(--text-primary)' : 'var(--text-muted)',
-              fontWeight: mode === 'signin' ? 700 : 500,
-              fontSize: '0.85rem',
+              fontWeight: mode === 'signin' ? 800 : 500,
+              fontSize: '0.88rem',
               boxShadow: mode === 'signin' ? 'var(--shadow-sm)' : 'none',
             }}
           >
@@ -189,12 +197,12 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
             }}
             style={{
               flex: 1,
-              padding: '0.5rem',
+              padding: '0.6rem',
               borderRadius: 'var(--radius-sm)',
-              backgroundColor: mode === 'signup' ? 'var(--bg-card)' : 'transparent',
+              backgroundColor: mode === 'signup' ? 'var(--bg-card-solid)' : 'transparent',
               color: mode === 'signup' ? 'var(--text-primary)' : 'var(--text-muted)',
-              fontWeight: mode === 'signup' ? 700 : 500,
-              fontSize: '0.85rem',
+              fontWeight: mode === 'signup' ? 800 : 500,
+              fontSize: '0.88rem',
               boxShadow: mode === 'signup' ? 'var(--shadow-sm)' : 'none',
             }}
           >
@@ -205,17 +213,19 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
         {/* Error / Success Banners */}
         {errorMsg && (
           <div
+            className="animate-pop-in"
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem',
-              padding: '0.75rem',
+              padding: '0.85rem 1rem',
               borderRadius: 'var(--radius-md)',
               backgroundColor: 'var(--color-error-bg)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
+              border: '1px solid var(--color-error-border)',
               color: 'var(--color-error)',
-              fontSize: '0.85rem',
-              marginBottom: '1.25rem',
+              fontSize: '0.86rem',
+              marginBottom: '1.35rem',
+              fontWeight: 600,
             }}
           >
             <AlertCircle size={18} style={{ flexShrink: 0 }} />
@@ -225,17 +235,19 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
 
         {successMsg && (
           <div
+            className="animate-pop-in"
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem',
-              padding: '0.75rem',
+              padding: '0.85rem 1rem',
               borderRadius: 'var(--radius-md)',
               backgroundColor: 'var(--color-success-bg)',
-              border: '1px solid rgba(16, 185, 129, 0.3)',
+              border: '1px solid var(--color-success-border)',
               color: 'var(--color-success)',
-              fontSize: '0.85rem',
-              marginBottom: '1.25rem',
+              fontSize: '0.86rem',
+              marginBottom: '1.35rem',
+              fontWeight: 600,
             }}
           >
             <CheckCircle2 size={18} style={{ flexShrink: 0 }} />
@@ -244,14 +256,14 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
         )}
 
         {/* Auth Form */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
           {mode === 'signup' && (
             <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem' }}>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.4rem', color: 'var(--text-primary)' }}>
                 {t('auth.name_label')}
               </label>
               <div style={{ position: 'relative' }}>
-                <UserIcon size={16} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <UserIcon size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                 <input
                   type="text"
                   value={displayName}
@@ -259,12 +271,12 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
                   placeholder="z. B. Max Mustermann"
                   style={{
                     width: '100%',
-                    padding: '0.65rem 0.85rem 0.65rem 2.4rem',
+                    padding: '0.75rem 1rem 0.75rem 2.6rem',
                     borderRadius: 'var(--radius-md)',
                     backgroundColor: 'var(--bg-tertiary)',
-                    border: '1px solid var(--border-subtle)',
+                    border: '1px solid var(--border-medium)',
                     color: 'var(--text-primary)',
-                    fontSize: '0.9rem',
+                    fontSize: '0.94rem',
                     outline: 'none',
                   }}
                 />
@@ -273,11 +285,11 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
           )}
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem' }}>
+            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.4rem', color: 'var(--text-primary)' }}>
               {t('auth.email_label')}
             </label>
             <div style={{ position: 'relative' }}>
-              <Mail size={16} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <Mail size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input
                 type="email"
                 required
@@ -287,12 +299,12 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
                 autoComplete="email"
                 style={{
                   width: '100%',
-                  padding: '0.65rem 0.85rem 0.65rem 2.4rem',
+                  padding: '0.75rem 1rem 0.75rem 2.6rem',
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--bg-tertiary)',
-                  border: '1px solid var(--border-subtle)',
+                  border: '1px solid var(--border-medium)',
                   color: 'var(--text-primary)',
-                  fontSize: '0.9rem',
+                  fontSize: '0.94rem',
                   outline: 'none',
                 }}
               />
@@ -300,11 +312,11 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem' }}>
+            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.4rem', color: 'var(--text-primary)' }}>
               {t('auth.password_label')}
             </label>
             <div style={{ position: 'relative' }}>
-              <Lock size={16} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <Lock size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
@@ -314,12 +326,12 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
                 autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
                 style={{
                   width: '100%',
-                  padding: '0.65rem 2.4rem 0.65rem 2.4rem',
+                  padding: '0.75rem 2.6rem 0.75rem 2.6rem',
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--bg-tertiary)',
-                  border: '1px solid var(--border-subtle)',
+                  border: '1px solid var(--border-medium)',
                   color: 'var(--text-primary)',
-                  fontSize: '0.9rem',
+                  fontSize: '0.94rem',
                   outline: 'none',
                 }}
               />
@@ -328,7 +340,7 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
                 onClick={() => setShowPassword(!showPassword)}
                 style={{
                   position: 'absolute',
-                  right: '0.85rem',
+                  right: '1rem',
                   top: '50%',
                   transform: 'translateY(-50%)',
                   color: 'var(--text-muted)',
@@ -343,33 +355,35 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
             type="submit"
             disabled={isLoading}
             style={{
-              marginTop: '0.5rem',
-              padding: '0.85rem',
+              marginTop: '0.75rem',
+              padding: '1rem',
               borderRadius: 'var(--radius-md)',
               backgroundColor: 'var(--accent-primary)',
               color: '#0b0f17',
-              fontWeight: 800,
-              fontSize: '0.95rem',
+              fontWeight: 900,
+              fontSize: '1rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '0.5rem',
               cursor: isLoading ? 'wait' : 'pointer',
+              boxShadow: '0 4px 16px rgba(56, 189, 248, 0.4)',
             }}
           >
             <span>{isLoading ? (mode === 'signin' ? t('auth.signing_in') : t('auth.signing_up')) : (mode === 'signin' ? t('auth.sign_in') : t('auth.sign_up'))}</span>
-            <ArrowRight size={16} />
+            <ArrowRight size={18} />
           </button>
         </form>
 
         {/* Footer Guest Link */}
-        <div style={{ marginTop: '1.5rem', textAlign: 'center', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem' }}>
+        <div style={{ marginTop: '1.75rem', textAlign: 'center', borderTop: '1px solid var(--border-subtle)', paddingTop: '1.15rem' }}>
           <button
             type="button"
             onClick={handleGuest}
             style={{
-              fontSize: '0.82rem',
+              fontSize: '0.86rem',
               color: 'var(--text-secondary)',
+              fontWeight: 600,
               textDecoration: 'underline',
             }}
           >

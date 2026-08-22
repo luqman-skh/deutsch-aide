@@ -132,31 +132,52 @@ export const LexiconExplorer: React.FC<Props> = ({
   }, [sortedWords, displayCount]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       {/* Header Banner */}
       <div
         className="glass-panel"
         style={{
-          padding: '1.75rem',
-          background: 'linear-gradient(135deg, var(--bg-card), var(--bg-card-hover))',
+          padding: '2.25rem 2rem',
+          background: 'linear-gradient(135deg, rgba(16, 25, 44, 0.95) 0%, rgba(30, 41, 59, 0.7) 100%)',
           border: '1px solid var(--border-medium)',
+          boxShadow: 'var(--shadow-lg)',
         }}
       >
-        <span
-          style={{
-            fontSize: '0.75rem',
-            fontWeight: 700,
-            color: 'var(--accent-primary)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-          }}
-        >
-          {t('lexicon.badge')}
-        </span>
-        <h1 style={{ fontSize: '1.85rem', fontWeight: 800, marginTop: '0.2rem', letterSpacing: '-0.02em' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+          <span
+            style={{
+              fontSize: '0.72rem',
+              fontWeight: 800,
+              color: '#10b981',
+              backgroundColor: 'var(--color-success-bg)',
+              padding: '0.2rem 0.6rem',
+              borderRadius: 'var(--radius-full)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              border: '1px solid var(--color-success-border)',
+            }}
+          >
+            {t('lexicon.badge')}
+          </span>
+          <span
+            style={{
+              fontSize: '0.72rem',
+              padding: '0.2rem 0.6rem',
+              borderRadius: 'var(--radius-full)',
+              backgroundColor: 'var(--bg-tertiary)',
+              color: 'var(--text-secondary)',
+              fontWeight: 700,
+              border: '1px solid var(--border-subtle)',
+            }}
+          >
+            {words.length} Wörter
+          </span>
+        </div>
+
+        <h1 style={{ fontSize: '2.1rem', fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.2 }}>
           {t('lexicon.title')}
         </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '0.35rem' }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.94rem', marginTop: '0.4rem' }}>
           {t('lexicon.subtitle')}
         </p>
       </div>
@@ -165,10 +186,10 @@ export const LexiconExplorer: React.FC<Props> = ({
       <div
         className="glass-panel"
         style={{
-          padding: '1.25rem',
+          padding: '1.25rem 1.5rem',
           display: 'flex',
           flexDirection: 'column',
-          gap: '1rem',
+          gap: '1.1rem',
         }}
       >
         {/* Search input */}
@@ -177,7 +198,7 @@ export const LexiconExplorer: React.FC<Props> = ({
             size={18}
             style={{
               position: 'absolute',
-              left: '1rem',
+              left: '1.1rem',
               top: '50%',
               transform: 'translateY(-50%)',
               color: 'var(--text-muted)',
@@ -193,12 +214,12 @@ export const LexiconExplorer: React.FC<Props> = ({
             placeholder={t('lexicon.search_placeholder')}
             style={{
               width: '100%',
-              padding: '0.75rem 1rem 0.75rem 2.6rem',
+              padding: '0.85rem 1.1rem 0.85rem 2.8rem',
               borderRadius: 'var(--radius-md)',
               backgroundColor: 'var(--bg-tertiary)',
-              border: '1px solid var(--border-subtle)',
+              border: '1px solid var(--border-medium)',
               color: 'var(--text-primary)',
-              fontSize: '0.92rem',
+              fontSize: '0.94rem',
               outline: 'none',
             }}
           />
@@ -211,12 +232,12 @@ export const LexiconExplorer: React.FC<Props> = ({
             flexWrap: 'wrap',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '0.75rem',
+            gap: '0.85rem',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-              <Filter size={15} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--text-muted)', fontSize: '0.84rem', fontWeight: 600 }}>
+              <Filter size={16} />
               <span>{t('vocab.filter')}</span>
             </div>
 
@@ -228,12 +249,14 @@ export const LexiconExplorer: React.FC<Props> = ({
                 setDisplayCount(30);
               }}
               style={{
-                padding: '0.4rem 0.65rem',
-                borderRadius: 'var(--radius-md)',
+                padding: '0.45rem 0.85rem',
+                borderRadius: 'var(--radius-sm)',
                 backgroundColor: 'var(--bg-tertiary)',
-                border: '1px solid var(--border-subtle)',
-                fontSize: '0.85rem',
+                border: '1px solid var(--border-medium)',
+                fontSize: '0.84rem',
                 color: 'var(--text-primary)',
+                fontWeight: 600,
+                cursor: 'pointer',
               }}
             >
               <option value="all">{t('lexicon.all_articles')}</option>
@@ -251,12 +274,14 @@ export const LexiconExplorer: React.FC<Props> = ({
                 setDisplayCount(30);
               }}
               style={{
-                padding: '0.4rem 0.65rem',
-                borderRadius: 'var(--radius-md)',
+                padding: '0.45rem 0.85rem',
+                borderRadius: 'var(--radius-sm)',
                 backgroundColor: 'var(--bg-tertiary)',
-                border: '1px solid var(--border-subtle)',
-                fontSize: '0.85rem',
+                border: '1px solid var(--border-medium)',
+                fontSize: '0.84rem',
                 color: 'var(--text-primary)',
+                fontWeight: 600,
+                cursor: 'pointer',
               }}
             >
               <option value="all">{t('vocab.all_pos')}</option>
@@ -275,12 +300,14 @@ export const LexiconExplorer: React.FC<Props> = ({
                 setDisplayCount(30);
               }}
               style={{
-                padding: '0.4rem 0.65rem',
-                borderRadius: 'var(--radius-md)',
+                padding: '0.45rem 0.85rem',
+                borderRadius: 'var(--radius-sm)',
                 backgroundColor: 'var(--bg-tertiary)',
-                border: '1px solid var(--border-subtle)',
-                fontSize: '0.85rem',
+                border: '1px solid var(--border-medium)',
+                fontSize: '0.84rem',
                 color: 'var(--text-primary)',
+                fontWeight: 600,
+                cursor: 'pointer',
               }}
             >
               <option value="all">{t('vocab.all_levels')}</option>
@@ -297,12 +324,14 @@ export const LexiconExplorer: React.FC<Props> = ({
                 setDisplayCount(30);
               }}
               style={{
-                padding: '0.4rem 0.65rem',
-                borderRadius: 'var(--radius-md)',
+                padding: '0.45rem 0.85rem',
+                borderRadius: 'var(--radius-sm)',
                 backgroundColor: 'var(--bg-tertiary)',
-                border: '1px solid var(--border-subtle)',
-                fontSize: '0.85rem',
+                border: '1px solid var(--border-medium)',
+                fontSize: '0.84rem',
                 color: 'var(--text-primary)',
+                fontWeight: 600,
+                cursor: 'pointer',
               }}
             >
               <option value="all">Alle Status</option>
@@ -314,18 +343,20 @@ export const LexiconExplorer: React.FC<Props> = ({
           </div>
 
           {/* Sort Dropdown */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
             <ArrowUpDown size={15} color="var(--text-muted)" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
               style={{
-                padding: '0.4rem 0.65rem',
-                borderRadius: 'var(--radius-md)',
+                padding: '0.45rem 0.85rem',
+                borderRadius: 'var(--radius-sm)',
                 backgroundColor: 'var(--bg-tertiary)',
-                border: '1px solid var(--border-subtle)',
-                fontSize: '0.85rem',
+                border: '1px solid var(--border-medium)',
+                fontSize: '0.84rem',
                 color: 'var(--text-primary)',
+                fontWeight: 600,
+                cursor: 'pointer',
               }}
             >
               <option value="frequency">{t('lexicon.sort_frequency')}</option>
@@ -339,8 +370,8 @@ export const LexiconExplorer: React.FC<Props> = ({
 
       {/* Word Grid Results */}
       <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', padding: '0 0.25rem' }}>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem', padding: '0 0.25rem' }}>
+          <span style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
             <strong>{filteredWords.length}</strong> {t('lexicon.words_found')}
           </span>
         </div>
@@ -349,16 +380,16 @@ export const LexiconExplorer: React.FC<Props> = ({
           <div
             className="glass-panel"
             style={{
-              padding: '3rem 2rem',
+              padding: '3.5rem 2rem',
               textAlign: 'center',
               color: 'var(--text-muted)',
             }}
           >
-            <BookOpen size={40} style={{ margin: '0 auto 1rem auto', opacity: 0.5 }} />
-            <h3 style={{ fontSize: '1.15rem', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+            <BookOpen size={44} style={{ margin: '0 auto 1.25rem auto', opacity: 0.4 }} />
+            <h3 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 800 }}>
               {t('lexicon.no_words')}
             </h3>
-            <p style={{ fontSize: '0.85rem', maxWidth: '400px', margin: '0 auto 1rem auto' }}>
+            <p style={{ fontSize: '0.88rem', maxWidth: '420px', margin: '0 auto 1.25rem auto', lineHeight: 1.5 }}>
               {t('lexicon.no_words_desc')}
             </p>
           </div>
@@ -366,8 +397,8 @@ export const LexiconExplorer: React.FC<Props> = ({
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: '1rem',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))',
+              gap: '1.15rem',
             }}
           >
             {displayedWords.map((word) => {
@@ -381,21 +412,22 @@ export const LexiconExplorer: React.FC<Props> = ({
                   className="glass-panel-interactive"
                   onClick={() => setSelectedWord(word)}
                   style={{
-                    padding: '1.15rem',
+                    padding: '1.35rem',
                     cursor: 'pointer',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
+                    borderRadius: 'var(--radius-lg)',
                   }}
                 >
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                         <GenderBadge gender={word.gender as Gender} size="sm" showLabel />
                         <PosBadge pos={word.pos} size="sm" />
                       </div>
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                         <SpeakerButton
                           text={`${word.gender ? word.gender + ' ' : ''}${word.german}`}
                           rate={profile.speechSpeed}
@@ -405,20 +437,22 @@ export const LexiconExplorer: React.FC<Props> = ({
                           type="button"
                           onClick={(e) => handleToggleStar(e, word)}
                           style={{
-                            padding: '0.25rem',
+                            padding: '0.35rem',
                             color: isStarred ? 'var(--accent-gold)' : 'var(--text-muted)',
+                            borderRadius: 'var(--radius-full)',
+                            backgroundColor: isStarred ? 'var(--accent-gold-subtle)' : 'transparent',
                           }}
                           title={isStarred ? 'Gemerkt' : 'Zu Favoriten'}
                         >
-                          <Star size={16} fill={isStarred ? '#f59e0b' : 'none'} />
+                          <Star size={16} fill={isStarred ? '#f59e0b' : 'none'} color={isStarred ? '#f59e0b' : 'currentColor'} />
                         </button>
                       </div>
                     </div>
 
-                    <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
+                    <h3 style={{ fontSize: '1.3rem', fontWeight: 900, color: 'var(--text-primary)', marginBottom: '0.25rem', letterSpacing: '-0.01em' }}>
                       {word.german}
                     </h3>
-                    <p style={{ fontSize: '0.9rem', color: 'var(--accent-primary)', fontWeight: 600 }}>
+                    <p style={{ fontSize: '0.94rem', color: 'var(--accent-primary)', fontWeight: 700 }}>
                       {word.english}
                     </p>
                   </div>
@@ -428,14 +462,14 @@ export const LexiconExplorer: React.FC<Props> = ({
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      marginTop: '1rem',
-                      paddingTop: '0.5rem',
+                      marginTop: '1.25rem',
+                      paddingTop: '0.75rem',
                       borderTop: '1px solid var(--border-subtle)',
                       fontSize: '0.75rem',
                       color: 'var(--text-muted)',
                     }}
                   >
-                    <span>
+                    <span style={{ fontWeight: 600 }}>
                       {timesPracticed > 0 ? `${timesPracticed} ${t('lexicon.times_practiced')}` : t('lexicon.new')}
                     </span>
                     <CefrBadge level={word.cefr_level || 'A1'} size="sm" />
@@ -448,18 +482,19 @@ export const LexiconExplorer: React.FC<Props> = ({
 
         {/* Load More Button */}
         {displayedWords.length < filteredWords.length && (
-          <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+          <div style={{ textAlign: 'center', marginTop: '2rem' }}>
             <button
               type="button"
               onClick={() => setDisplayCount((prev) => prev + 30)}
               style={{
-                padding: '0.75rem 1.5rem',
+                padding: '0.85rem 1.75rem',
                 borderRadius: 'var(--radius-md)',
-                backgroundColor: 'var(--bg-card)',
+                backgroundColor: 'var(--bg-card-solid)',
                 border: '1px solid var(--border-medium)',
                 color: 'var(--text-primary)',
-                fontWeight: 700,
-                fontSize: '0.9rem',
+                fontWeight: 800,
+                fontSize: '0.92rem',
+                boxShadow: 'var(--shadow-sm)',
               }}
             >
               {t('lexicon.load_more')} ({filteredWords.length - displayedWords.length} verbleibend)

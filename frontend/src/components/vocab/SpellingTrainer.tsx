@@ -7,6 +7,7 @@ import { ProgressBar } from '../common/ProgressBar';
 import { SpeakerButton } from '../common/SpeakerButton';
 import { speakGerman, playSfx } from '../../utils/audio';
 import { storageService } from '../../services/storageService';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 interface Props {
   words: Word[];
@@ -26,6 +27,7 @@ export const SpellingTrainer: React.FC<Props> = ({
   onFinish,
   onExit,
 }) => {
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userInput, setUserInput] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -108,7 +110,7 @@ export const SpellingTrainer: React.FC<Props> = ({
   };
 
   return (
-    <div style={{ maxWidth: '640px', margin: '0 auto', width: '100%' }}>
+    <div style={{ maxWidth: '680px', margin: '0 auto', width: '100%' }}>
       {/* Header */}
       <div
         style={{
@@ -127,35 +129,54 @@ export const SpellingTrainer: React.FC<Props> = ({
             gap: '0.4rem',
             color: 'var(--text-muted)',
             fontSize: '0.85rem',
+            fontWeight: 600,
+            padding: '0.4rem 0.75rem',
+            borderRadius: 'var(--radius-full)',
+            backgroundColor: 'var(--bg-tertiary)',
+            border: '1px solid var(--border-subtle)',
           }}
         >
-          <ArrowLeft size={16} />
-          <span>Beenden</span>
+          <ArrowLeft size={15} />
+          <span>{t('fc.exit')}</span>
         </button>
 
-        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-          Wort {currentIndex + 1} von {words.length}
+        <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
+          {t('spelling.word_count')} {currentIndex + 1} {t('fc.of')} {words.length}
         </span>
       </div>
 
-      <div style={{ marginBottom: '1.5rem' }}>
-        <ProgressBar current={currentIndex + 1} total={words.length} height={6} />
+      <div style={{ marginBottom: '1.75rem' }}>
+        <ProgressBar current={currentIndex + 1} total={words.length} height={7} />
       </div>
 
       {/* Prompt Card */}
       <div
-        className="glass-panel"
+        className="glass-panel glow-edge"
         style={{
-          padding: '2rem 1.5rem',
+          padding: '2.5rem 2rem',
           textAlign: 'center',
           marginBottom: '1.5rem',
-          boxShadow: 'var(--shadow-md)',
+          boxShadow: 'var(--shadow-lg)',
+          background: 'linear-gradient(145deg, var(--bg-card-solid) 0%, var(--bg-secondary) 100%)',
+          border: '1px solid var(--border-medium)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-              Schreibübung (Spelling)
+            <span
+              style={{
+                fontSize: '0.72rem',
+                fontWeight: 800,
+                color: 'var(--color-success)',
+                backgroundColor: 'var(--color-success-bg)',
+                padding: '0.2rem 0.6rem',
+                borderRadius: 'var(--radius-full)',
+                border: '1px solid var(--color-success-border)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+              }}
+            >
+              {t('mode.spelling.badge')}
             </span>
             <PosBadge pos={currentWord.pos} size="sm" />
           </div>
@@ -167,48 +188,50 @@ export const SpellingTrainer: React.FC<Props> = ({
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.3rem',
-              padding: '0.3rem 0.6rem',
+              gap: '0.35rem',
+              padding: '0.35rem 0.75rem',
               borderRadius: 'var(--radius-full)',
               backgroundColor: hintLevel > 0 ? 'var(--accent-gold-subtle)' : 'var(--bg-tertiary)',
-              border: `1px solid ${hintLevel > 0 ? 'rgba(245, 158, 11, 0.3)' : 'var(--border-subtle)'}`,
-              color: hintLevel > 0 ? 'var(--accent-gold)' : 'var(--text-muted)',
-              fontSize: '0.75rem',
-              fontWeight: 600,
+              border: `1px solid ${hintLevel > 0 ? 'rgba(245, 158, 11, 0.4)' : 'var(--border-medium)'}`,
+              color: hintLevel > 0 ? 'var(--accent-gold)' : 'var(--text-secondary)',
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              boxShadow: 'var(--shadow-sm)',
             }}
           >
             <Lightbulb size={14} />
-            <span>Hinweis {hintLevel > 0 ? `(${hintLevel}/2)` : ''}</span>
+            <span>{t('spelling.hint_btn')} {hintLevel > 0 ? `(${hintLevel}/2)` : ''}</span>
           </button>
         </div>
 
-        <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
-          Übersetze ins Deutsche:
+        <div style={{ fontSize: '0.88rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.35rem' }}>
+          {t('spelling.prompt')}
         </div>
 
-        <h2 style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--accent-primary)', marginBottom: '1rem' }}>
+        <h2 style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--accent-primary)', letterSpacing: '-0.02em', marginBottom: '1rem' }}>
           {currentWord.english}
         </h2>
 
         {/* Hint display */}
         {hintLevel >= 1 && (
           <div
+            className="animate-pop-in"
             style={{
-              padding: '0.5rem 1rem',
+              padding: '0.6rem 1.25rem',
               borderRadius: 'var(--radius-md)',
               backgroundColor: 'var(--accent-gold-subtle)',
-              border: '1px solid rgba(245, 158, 11, 0.3)',
+              border: '1px solid rgba(245, 158, 11, 0.35)',
               color: 'var(--accent-gold)',
-              fontSize: '0.9rem',
+              fontSize: '0.92rem',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '0.5rem',
-              marginBottom: '0.5rem',
+              gap: '0.75rem',
+              marginTop: '0.5rem',
             }}
           >
-            {currentWord.gender && <span>Artikel: <strong>{currentWord.gender}</strong></span>}
+            {currentWord.gender && <span>{t('spelling.article')} <strong>{currentWord.gender}</strong></span>}
             <span>
-              Anfangsbuchstabe: <strong>{currentWord.german[0]}</strong>
+              {t('spelling.first_char')} <strong>{currentWord.german[0]}</strong>
               {hintLevel >= 2 && <span>...{currentWord.german.slice(1)}</span>}
             </span>
           </div>
@@ -217,24 +240,24 @@ export const SpellingTrainer: React.FC<Props> = ({
 
       {/* Input Form */}
       <form onSubmit={handleCheck} style={{ marginBottom: '1.25rem' }}>
-        <div style={{ position: 'relative', marginBottom: '1rem' }}>
+        <div style={{ position: 'relative', marginBottom: '1.25rem' }}>
           <input
             ref={inputRef}
             type="text"
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
             disabled={isSubmitted}
-            placeholder="Deutsches Wort eingeben..."
+            placeholder={t('spelling.placeholder')}
             autoComplete="off"
             autoCorrect="off"
             spellCheck="false"
             style={{
               width: '100%',
-              padding: '1.1rem 1.25rem',
-              fontSize: '1.2rem',
-              fontWeight: 600,
+              padding: '1.2rem 1.4rem',
+              fontSize: '1.25rem',
+              fontWeight: 700,
               borderRadius: 'var(--radius-lg)',
-              backgroundColor: 'var(--bg-card)',
+              backgroundColor: 'var(--bg-card-solid)',
               border: `2px solid ${
                 isSubmitted
                   ? isCorrect
@@ -244,8 +267,8 @@ export const SpellingTrainer: React.FC<Props> = ({
               }`,
               color: 'var(--text-primary)',
               outline: 'none',
-              transition: 'border-color var(--transition-fast)',
-              boxShadow: 'var(--shadow-sm)',
+              transition: 'all var(--transition-fast)',
+              boxShadow: 'var(--shadow-md)',
             }}
           />
         </div>
@@ -256,13 +279,13 @@ export const SpellingTrainer: React.FC<Props> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '0.4rem',
-            marginBottom: '1.25rem',
+            gap: '0.5rem',
+            marginBottom: '1.5rem',
             flexWrap: 'wrap',
           }}
         >
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginRight: '0.25rem' }}>
-            Umlaute:
+          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, marginRight: '0.25rem' }}>
+            {t('spelling.umlauts')}
           </span>
           {umlauts.map((char) => (
             <button
@@ -271,18 +294,20 @@ export const SpellingTrainer: React.FC<Props> = ({
               onClick={() => handleInsertChar(char)}
               disabled={isSubmitted}
               style={{
-                width: '36px',
-                height: '36px',
+                width: '40px',
+                height: '40px',
                 borderRadius: 'var(--radius-sm)',
-                backgroundColor: 'var(--bg-card)',
+                backgroundColor: 'var(--bg-tertiary)',
                 border: '1px solid var(--border-medium)',
                 color: 'var(--text-primary)',
-                fontWeight: 700,
-                fontSize: '1rem',
+                fontWeight: 800,
+                fontSize: '1.05rem',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                boxShadow: 'var(--shadow-sm)',
               }}
+              className="glass-panel-interactive"
             >
               {char}
             </button>
@@ -295,16 +320,17 @@ export const SpellingTrainer: React.FC<Props> = ({
             disabled={!userInput.trim()}
             style={{
               width: '100%',
-              padding: '1rem',
+              padding: '1.1rem',
               borderRadius: 'var(--radius-md)',
               backgroundColor: userInput.trim() ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
               color: userInput.trim() ? '#0b0f17' : 'var(--text-muted)',
-              fontWeight: 800,
-              fontSize: '1rem',
+              fontWeight: 900,
+              fontSize: '1.05rem',
               cursor: userInput.trim() ? 'pointer' : 'not-allowed',
+              boxShadow: userInput.trim() ? '0 4px 16px rgba(56, 189, 248, 0.4)' : 'none',
             }}
           >
-            Überprüfen [Enter]
+            {t('spelling.check')}
           </button>
         ) : (
           <button
@@ -316,15 +342,16 @@ export const SpellingTrainer: React.FC<Props> = ({
               alignItems: 'center',
               justifyContent: 'center',
               gap: '0.5rem',
-              padding: '1rem',
+              padding: '1.1rem',
               borderRadius: 'var(--radius-md)',
               backgroundColor: 'var(--accent-primary)',
               color: '#0b0f17',
-              fontWeight: 800,
-              fontSize: '1rem',
+              fontWeight: 900,
+              fontSize: '1.05rem',
+              boxShadow: '0 4px 16px rgba(56, 189, 248, 0.4)',
             }}
           >
-            <span>Weiter [Enter]</span>
+            <span>{t('quiz.next')}</span>
             <ArrowRight size={18} />
           </button>
         )}
@@ -335,41 +362,41 @@ export const SpellingTrainer: React.FC<Props> = ({
         <div
           className="glass-panel animate-fade-in"
           style={{
-            padding: '1.25rem',
+            padding: '1.35rem',
             borderRadius: 'var(--radius-lg)',
             backgroundColor: isCorrect ? 'var(--color-success-bg)' : 'var(--color-error-bg)',
-            border: `1px solid ${isCorrect ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)'}`,
+            border: `1px solid ${isCorrect ? 'var(--color-success-border)' : 'var(--color-error-border)'}`,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
             {isCorrect ? (
               <>
-                <CheckCircle2 size={22} color="var(--color-success)" />
-                <span style={{ fontWeight: 800, color: 'var(--color-success)', fontSize: '1.1rem' }}>
-                  Richtig!
+                <CheckCircle2 size={24} color="var(--color-success)" />
+                <span style={{ fontWeight: 800, color: 'var(--color-success)', fontSize: '1.15rem' }}>
+                  {t('spelling.correct')}
                 </span>
               </>
             ) : (
               <>
-                <XCircle size={22} color="var(--color-error)" />
-                <span style={{ fontWeight: 800, color: 'var(--color-error)', fontSize: '1.1rem' }}>
-                  Nicht ganz!
+                <XCircle size={24} color="var(--color-error)" />
+                <span style={{ fontWeight: 800, color: 'var(--color-error)', fontSize: '1.15rem' }}>
+                  {t('spelling.incorrect')}
                 </span>
               </>
             )}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.4rem' }}>
-            <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Richtige Lösung:</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{t('spelling.solution')}</span>
             <GenderBadge gender={currentWord.gender} showLabel />
-            <strong style={{ fontSize: '1.15rem', color: 'var(--text-primary)' }}>{currentWord.german}</strong>
+            <strong style={{ fontSize: '1.25rem', color: 'var(--text-primary)' }}>{currentWord.german}</strong>
             <SpeakerButton text={`${currentWord.gender ? currentWord.gender + ' ' : ''}${currentWord.german}`} size={16} />
           </div>
 
           {currentWord.example_de && (
-            <div style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            <div style={{ marginTop: '0.85rem', fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
               <div>"{currentWord.example_de}"</div>
-              {currentWord.example_en && <div style={{ color: 'var(--text-muted)' }}>"{currentWord.example_en}"</div>}
+              {currentWord.example_en && <div style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>"{currentWord.example_en}"</div>}
             </div>
           )}
         </div>

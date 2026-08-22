@@ -1,7 +1,13 @@
-import React, { useEffect } from 'react';
-import confetti from 'canvas-confetti';
-import { Trophy, Zap, RotateCcw, ArrowRight } from 'lucide-react';
+import React from 'react';
+import {
+  Trophy,
+  RotateCcw,
+  AlertTriangle,
+} from 'lucide-react';
 import type { Word } from '../../types';
+import { GenderBadge } from '../common/GenderBadge';
+import { SpeakerButton } from '../common/SpeakerButton';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 interface Props {
   modeTitle: string;
@@ -24,210 +30,158 @@ export const SessionSummary: React.FC<Props> = ({
   onRetryMistakes,
   onExit,
 }) => {
+  const { t } = useTranslation();
   const accuracy = totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : 0;
 
-  useEffect(() => {
-    if (accuracy >= 60) {
-      try {
-        confetti({
-          particleCount: 80,
-          spread: 70,
-          origin: { y: 0.6 },
-        });
-      } catch {
-        // Safe fallback
-      }
-    }
-  }, [accuracy]);
-
   return (
-    <div
-      className="glass-panel animate-pop-in"
-      style={{
-        maxWidth: '560px',
-        margin: '2rem auto',
-        padding: '2.5rem 2rem',
-        textAlign: 'center',
-      }}
-    >
-      {/* Trophy Badge */}
+    <div style={{ maxWidth: '680px', margin: '0 auto', width: '100%' }}>
       <div
+        className="glass-panel animate-pop-in glow-edge"
         style={{
-          width: '72px',
-          height: '72px',
-          borderRadius: 'var(--radius-full)',
-          background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.05))',
-          border: '2px solid rgba(245, 158, 11, 0.4)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          margin: '0 auto 1.5rem auto',
-          color: 'var(--accent-gold)',
+          padding: '3rem 2.25rem',
+          textAlign: 'center',
+          boxShadow: 'var(--shadow-xl)',
+          background: 'linear-gradient(145deg, var(--bg-card-solid) 0%, var(--bg-secondary) 100%)',
+          border: '1px solid var(--border-medium)',
         }}
       >
-        <Trophy size={36} />
-      </div>
-
-      <h2 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.5rem', letterSpacing: '-0.02em' }}>
-        Hervorragend geübt!
-      </h2>
-      <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '2rem' }}>
-        Lerneinheit abgeschlossen: <strong>{modeTitle}</strong>
-      </p>
-
-      {/* Stats Grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '1rem',
-          marginBottom: '2rem',
-        }}
-      >
+        {/* Celebration Trophy Emblem */}
         <div
           style={{
-            padding: '1rem 0.5rem',
-            borderRadius: 'var(--radius-md)',
-            backgroundColor: 'var(--bg-tertiary)',
-            border: '1px solid var(--border-subtle)',
+            width: '90px',
+            height: '90px',
+            borderRadius: 'var(--radius-full)',
+            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(56, 189, 248, 0.25))',
+            border: '1px solid rgba(245, 158, 11, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 1.5rem auto',
+            boxShadow: '0 0 30px rgba(245, 158, 11, 0.25)',
           }}
+          className="animate-float"
         >
-          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--accent-primary)' }}>
-            {totalAnswered}
-          </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-            Wörter Geübt
-          </div>
+          <Trophy size={48} color="var(--accent-gold)" />
         </div>
 
+        <h1 style={{ fontSize: '2.4rem', fontWeight: 900, marginBottom: '0.4rem', letterSpacing: '-0.03em' }}>
+          {t('summary.completed')}
+        </h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '2.25rem' }}>
+          {modeTitle} • {t('summary.great_job')}
+        </p>
+
+        {/* Stats Metrics Grid */}
         <div
           style={{
-            padding: '1rem 0.5rem',
-            borderRadius: 'var(--radius-md)',
-            backgroundColor: 'var(--bg-tertiary)',
-            border: '1px solid var(--border-subtle)',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '1rem',
+            marginBottom: '2.5rem',
           }}
         >
+          {/* Accuracy */}
           <div
             style={{
-              fontSize: '1.75rem',
-              fontWeight: 800,
-              color: accuracy >= 80 ? 'var(--color-success)' : accuracy >= 50 ? 'var(--accent-gold)' : 'var(--color-error)',
-            }}
-          >
-            {accuracy}%
-          </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-            Genauigkeit
-          </div>
-        </div>
-
-        <div
-          style={{
-            padding: '1rem 0.5rem',
-            borderRadius: 'var(--radius-md)',
-            backgroundColor: 'rgba(245, 158, 11, 0.08)',
-            border: '1px solid rgba(245, 158, 11, 0.25)',
-          }}
-        >
-          <div
-            style={{
-              fontSize: '1.75rem',
-              fontWeight: 800,
-              color: 'var(--accent-gold)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.2rem',
-            }}
-          >
-            <Zap size={20} fill="#f59e0b" />
-            <span>+{xpGained}</span>
-          </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-            XP Erhalten
-          </div>
-        </div>
-      </div>
-
-      {/* Incorrect Words Review Box (if any) */}
-      {incorrectWords.length > 0 && (
-        <div
-          style={{
-            backgroundColor: 'var(--bg-secondary)',
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '1rem',
-            marginBottom: '2rem',
-            textAlign: 'left',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '0.75rem',
-            }}
-          >
-            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-error)' }}>
-              Nochmals üben ({incorrectWords.length}):
-            </span>
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '0.5rem',
-              maxHeight: '140px',
-              overflowY: 'auto',
-            }}
-          >
-            {incorrectWords.map((w, idx) => (
-              <span
-                key={idx}
-                style={{
-                  fontSize: '0.8rem',
-                  padding: '0.25rem 0.6rem',
-                  borderRadius: 'var(--radius-sm)',
-                  backgroundColor: 'var(--bg-tertiary)',
-                  border: '1px solid var(--border-subtle)',
-                  color: 'var(--text-primary)',
-                }}
-              >
-                {w.gender ? `${w.gender} ` : ''}<strong>{w.german}</strong> → {w.english}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Action Buttons */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-        {incorrectWords.length > 0 && onRetryMistakes && (
-          <button
-            type="button"
-            onClick={onRetryMistakes}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              padding: '0.85rem 1.5rem',
+              padding: '1.25rem',
               borderRadius: 'var(--radius-md)',
-              backgroundColor: 'var(--accent-gold)',
-              color: '#0b0f17',
-              fontWeight: 700,
-              fontSize: '0.95rem',
-              boxShadow: 'var(--shadow-md)',
+              backgroundColor: 'var(--bg-tertiary)',
+              border: '1px solid var(--border-subtle)',
             }}
           >
-            <RotateCcw size={18} />
-            <span>Fehler wiederholen ({incorrectWords.length} Wörter)</span>
-          </button>
+            <div style={{ fontSize: '2.2rem', fontWeight: 900, color: accuracy >= 80 ? 'var(--color-success)' : 'var(--accent-gold)', fontFamily: 'var(--font-mono)' }}>
+              {accuracy}%
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, marginTop: '0.2rem' }}>
+              {t('summary.accuracy')}
+            </div>
+          </div>
+
+          {/* Correct / Total */}
+          <div
+            style={{
+              padding: '1.25rem',
+              borderRadius: 'var(--radius-md)',
+              backgroundColor: 'var(--bg-tertiary)',
+              border: '1px solid var(--border-subtle)',
+            }}
+          >
+            <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+              {correctCount}/{totalAnswered}
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, marginTop: '0.2rem' }}>
+              {t('summary.correct_total')}
+            </div>
+          </div>
+
+          {/* XP Gained */}
+          <div
+            style={{
+              padding: '1.25rem',
+              borderRadius: 'var(--radius-md)',
+              backgroundColor: 'var(--accent-primary-subtle)',
+              border: '1px solid rgba(56, 189, 248, 0.35)',
+            }}
+          >
+            <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--accent-primary)', fontFamily: 'var(--font-mono)' }}>
+              +{xpGained}
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--accent-primary)', fontWeight: 700, marginTop: '0.2rem' }}>
+              {t('summary.xp_earned')}
+            </div>
+          </div>
+        </div>
+
+        {/* Mistakes Review Section */}
+        {incorrectWords.length > 0 && (
+          <div style={{ marginBottom: '2.5rem', textAlign: 'left' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.85rem' }}>
+              <AlertTriangle size={17} color="var(--color-error)" />
+              <span style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--color-error)' }}>
+                {t('summary.mistakes_title')} ({incorrectWords.length})
+              </span>
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem',
+                maxHeight: '220px',
+                overflowY: 'auto',
+                paddingRight: '0.35rem',
+              }}
+            >
+              {incorrectWords.map((word) => (
+                <div
+                  key={word.id || word.german}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.75rem 1rem',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border-subtle)',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                    <GenderBadge gender={word.gender} size="sm" />
+                    <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '0.98rem' }}>
+                      {word.german}
+                    </span>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>— {word.english}</span>
+                  </div>
+
+                  <SpeakerButton text={`${word.gender ? word.gender + ' ' : ''}${word.german}`} size={15} />
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
+        {/* Action Controls */}
+        <div style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center', flexWrap: 'wrap' }}>
           <button
             type="button"
             onClick={onRestart}
@@ -237,38 +191,61 @@ export const SessionSummary: React.FC<Props> = ({
               alignItems: 'center',
               justifyContent: 'center',
               gap: '0.5rem',
-              padding: '0.85rem 1.25rem',
+              padding: '1.1rem 1.5rem',
               borderRadius: 'var(--radius-md)',
               backgroundColor: 'var(--accent-primary)',
               color: '#0b0f17',
-              fontWeight: 700,
-              fontSize: '0.95rem',
+              fontWeight: 900,
+              fontSize: '1rem',
+              boxShadow: '0 4px 16px rgba(56, 189, 248, 0.4)',
+              minWidth: '180px',
             }}
           >
             <RotateCcw size={18} />
-            <span>Neu starten</span>
+            <span>{t('summary.train_again')}</span>
           </button>
+
+          {incorrectWords.length > 0 && onRetryMistakes && (
+            <button
+              type="button"
+              onClick={onRetryMistakes}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                padding: '1.1rem 1.5rem',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--color-error-bg)',
+                border: '1px solid var(--color-error-border)',
+                color: 'var(--color-error)',
+                fontWeight: 800,
+                fontSize: '1rem',
+                minWidth: '180px',
+              }}
+            >
+              <AlertTriangle size={18} />
+              <span>{t('summary.retry_mistakes')}</span>
+            </button>
+          )}
 
           <button
             type="button"
             onClick={onExit}
             style={{
               flex: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              padding: '0.85rem 1.25rem',
+              padding: '1.1rem 1.5rem',
               borderRadius: 'var(--radius-md)',
               backgroundColor: 'var(--bg-tertiary)',
               border: '1px solid var(--border-medium)',
               color: 'var(--text-primary)',
-              fontWeight: 600,
-              fontSize: '0.95rem',
+              fontWeight: 700,
+              fontSize: '1rem',
+              minWidth: '160px',
             }}
           >
-            <span>Zurück zur Übersicht</span>
-            <ArrowRight size={18} />
+            {t('summary.back_to_menu')}
           </button>
         </div>
       </div>

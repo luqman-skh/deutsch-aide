@@ -27,13 +27,17 @@ export const ProgressBar: React.FC<Props> = ({
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: '0.35rem',
-            fontSize: '0.8rem',
+            marginBottom: '0.4rem',
+            fontSize: '0.78rem',
             color: 'var(--text-secondary)',
           }}
         >
-          {label && <span>{label}</span>}
-          {showPercentage && <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{percentage}%</span>}
+          {label && <span style={{ fontWeight: 600 }}>{label}</span>}
+          {showPercentage && (
+            <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+              {percentage}%
+            </span>
+          )}
         </div>
       )}
       <div
@@ -44,15 +48,20 @@ export const ProgressBar: React.FC<Props> = ({
           borderRadius: 'var(--radius-full)',
           overflow: 'hidden',
           border: '1px solid var(--border-subtle)',
+          padding: '1px',
+          boxShadow: 'var(--shadow-inner)',
         }}
       >
         <div
           style={{
             width: `${percentage}%`,
             height: '100%',
-            backgroundColor: color,
+            background: color.includes('gradient')
+              ? color
+              : `linear-gradient(90deg, ${color}, var(--accent-primary))`,
             borderRadius: 'var(--radius-full)',
-            transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            transition: 'width 0.45s cubic-bezier(0.34, 1.3, 0.64, 1)',
+            boxShadow: `0 0 10px ${color}`,
           }}
         />
       </div>

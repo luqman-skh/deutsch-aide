@@ -90,13 +90,14 @@ export const ProfileView: React.FC<Props> = ({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      {/* Profile Overview Card */}
+      {/* Profile Overview Banner */}
       <div
-        className="glass-panel"
+        className="glass-panel glow-edge"
         style={{
-          padding: '2rem',
-          background: 'linear-gradient(135deg, var(--bg-card), var(--bg-card-hover))',
+          padding: '2.25rem 2rem',
+          background: 'linear-gradient(135deg, rgba(16, 25, 44, 0.95) 0%, rgba(30, 41, 59, 0.7) 100%)',
           border: '1px solid var(--border-medium)',
+          boxShadow: 'var(--shadow-lg)',
         }}
       >
         <div
@@ -105,30 +106,31 @@ export const ProfileView: React.FC<Props> = ({
             flexWrap: 'wrap',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '1.5rem',
+            gap: '1.75rem',
           }}
         >
           {/* User Info & Avatar */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
             <div
               style={{
-                width: '72px',
-                height: '72px',
+                width: '78px',
+                height: '78px',
                 borderRadius: 'var(--radius-full)',
-                background: 'linear-gradient(135deg, #2563eb, #10b981)',
+                background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #06b6d4 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: 'var(--shadow-md)',
+                boxShadow: '0 0 25px rgba(56, 189, 248, 0.35)',
                 color: '#ffffff',
+                border: '2px solid rgba(255, 255, 255, 0.2)',
               }}
             >
-              <User size={36} />
+              <User size={40} />
             </div>
 
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                <h1 style={{ fontSize: '1.65rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem', flexWrap: 'wrap' }}>
+                <h1 style={{ fontSize: '1.85rem', fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.15 }}>
                   {profile.name}
                 </h1>
                 <CefrBadge level={profile.targetLevel} size="md" />
@@ -138,15 +140,21 @@ export const ProfileView: React.FC<Props> = ({
                 <span
                   style={{
                     fontSize: '0.82rem',
-                    fontWeight: 700,
+                    fontWeight: 800,
                     color: 'var(--accent-primary)',
                     backgroundColor: 'var(--accent-primary-subtle)',
-                    padding: '0.15rem 0.5rem',
+                    padding: '0.2rem 0.65rem',
                     borderRadius: 'var(--radius-full)',
+                    border: '1px solid rgba(56, 189, 248, 0.3)',
                   }}
                 >
                   Stufe {profile.level}: {profile.levelTitle}
                 </span>
+                {profile.email && (
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                    ({profile.email})
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -158,14 +166,15 @@ export const ProfileView: React.FC<Props> = ({
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.4rem',
-              padding: '0.65rem 1.2rem',
+              gap: '0.45rem',
+              padding: '0.75rem 1.4rem',
               borderRadius: 'var(--radius-md)',
               backgroundColor: 'var(--bg-tertiary)',
-              border: '1px solid var(--border-subtle)',
+              border: '1px solid var(--border-medium)',
               color: 'var(--text-primary)',
-              fontWeight: 700,
-              fontSize: '0.85rem',
+              fontWeight: 800,
+              fontSize: '0.88rem',
+              boxShadow: 'var(--shadow-sm)',
             }}
           >
             <Settings size={16} />
@@ -174,12 +183,12 @@ export const ProfileView: React.FC<Props> = ({
         </div>
 
         {/* Level XP Progress Bar */}
-        <div style={{ marginTop: '1.75rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '0.4rem' }}>
+        <div style={{ marginTop: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.84rem', marginBottom: '0.45rem' }}>
             <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>
               {t('profile.level_progress')} (Stufe {profile.level})
             </span>
-            <span style={{ color: 'var(--accent-primary)', fontWeight: 700 }}>
+            <span style={{ color: 'var(--accent-primary)', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
               {xpIntoCurrentLevel} / 100 XP
             </span>
           </div>
@@ -191,6 +200,8 @@ export const ProfileView: React.FC<Props> = ({
               backgroundColor: 'var(--bg-tertiary)',
               borderRadius: 'var(--radius-full)',
               overflow: 'hidden',
+              border: '1px solid var(--border-subtle)',
+              padding: '1px',
             }}
           >
             <div
@@ -198,11 +209,13 @@ export const ProfileView: React.FC<Props> = ({
                 width: `${levelProgressPercent}%`,
                 height: '100%',
                 background: 'linear-gradient(90deg, #38bdf8, #10b981)',
-                transition: 'width 0.4s ease',
+                borderRadius: 'var(--radius-full)',
+                boxShadow: '0 0 12px rgba(56, 189, 248, 0.4)',
+                transition: 'width 0.45s ease',
               }}
             />
           </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+          <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
             {t('profile.xp_to_next', { xp: 100 - xpIntoCurrentLevel, lvl: profile.level + 1 })}
           </div>
         </div>
@@ -212,26 +225,27 @@ export const ProfileView: React.FC<Props> = ({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '1rem',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: '1.25rem',
         }}
       >
         {/* Streak */}
         <div
           className="glass-panel"
           style={{
-            padding: '1.25rem',
-            borderLeft: '4px solid #f59e0b',
+            padding: '1.4rem',
+            borderTop: '4px solid #f59e0b',
+            boxShadow: 'var(--shadow-md)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-gold)', marginBottom: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--accent-gold)', marginBottom: '0.65rem' }}>
             <Flame size={20} fill="#f59e0b" />
-            <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{t('profile.streak_title')}</span>
+            <span style={{ fontWeight: 800, fontSize: '0.88rem' }}>{t('profile.streak_title')}</span>
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>
+          <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1, fontFamily: 'var(--font-mono)' }}>
             {profile.streak} <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-muted)' }}>{t('profile.streak_days')}</span>
           </div>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.45rem' }}>
             {t('profile.streak_desc')}
           </p>
         </div>
@@ -240,18 +254,19 @@ export const ProfileView: React.FC<Props> = ({
         <div
           className="glass-panel"
           style={{
-            padding: '1.25rem',
-            borderLeft: '4px solid var(--accent-primary)',
+            padding: '1.4rem',
+            borderTop: '4px solid var(--accent-primary)',
+            boxShadow: 'var(--shadow-md)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-primary)', marginBottom: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--accent-primary)', marginBottom: '0.65rem' }}>
             <Zap size={20} fill="currentColor" />
-            <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{t('profile.total_xp')}</span>
+            <span style={{ fontWeight: 800, fontSize: '0.88rem' }}>{t('profile.total_xp')}</span>
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>
+          <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1, fontFamily: 'var(--font-mono)' }}>
             {profile.xp} <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-muted)' }}>XP</span>
           </div>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.45rem' }}>
             {t('profile.total_xp_desc')}
           </p>
         </div>
@@ -260,18 +275,19 @@ export const ProfileView: React.FC<Props> = ({
         <div
           className="glass-panel"
           style={{
-            padding: '1.25rem',
-            borderLeft: '4px solid #10b981',
+            padding: '1.4rem',
+            borderTop: '4px solid #10b981',
+            boxShadow: 'var(--shadow-md)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-success)', marginBottom: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--color-success)', marginBottom: '0.65rem' }}>
             <Target size={20} />
-            <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{t('profile.daily_goal')}</span>
+            <span style={{ fontWeight: 800, fontSize: '0.88rem' }}>{t('profile.daily_goal')}</span>
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>
+          <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1, fontFamily: 'var(--font-mono)' }}>
             {profile.todayWordsPracticed} / {profile.dailyGoal}
           </div>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.45rem' }}>
             {Math.round((profile.todayWordsPracticed / profile.dailyGoal) * 100)}% {t('profile.daily_goal_desc')}
           </p>
         </div>
@@ -280,18 +296,19 @@ export const ProfileView: React.FC<Props> = ({
         <div
           className="glass-panel"
           style={{
-            padding: '1.25rem',
-            borderLeft: '4px solid #a855f7',
+            padding: '1.4rem',
+            borderTop: '4px solid #a855f7',
+            boxShadow: 'var(--shadow-md)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#a855f7', marginBottom: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#a855f7', marginBottom: '0.65rem' }}>
             <Trophy size={20} />
-            <span style={{ fontWeight: 700, fontSize: '0.85rem' }}>{t('profile.rush_record')}</span>
+            <span style={{ fontWeight: 800, fontSize: '0.88rem' }}>{t('profile.rush_record')}</span>
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>
+          <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1, fontFamily: 'var(--font-mono)' }}>
             {profile.rushHighScore || 0} <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-muted)' }}>Pkt</span>
           </div>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.45rem' }}>
             {t('profile.rush_record_desc')}
           </p>
         </div>
@@ -301,12 +318,12 @@ export const ProfileView: React.FC<Props> = ({
       <div
         className="glass-panel"
         style={{
-          padding: '1.5rem',
+          padding: '1.75rem',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
-          <Calendar size={18} color="var(--accent-primary)" />
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+          <Calendar size={20} color="var(--accent-primary)" />
+          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, letterSpacing: '-0.01em' }}>
             {t('profile.activity_chart')}
           </h3>
         </div>
@@ -316,13 +333,13 @@ export const ProfileView: React.FC<Props> = ({
             display: 'flex',
             alignItems: 'flex-end',
             justifyContent: 'space-between',
-            height: '140px',
-            gap: '0.5rem',
+            height: '160px',
+            gap: '0.75rem',
             paddingTop: '1rem',
           }}
         >
           {past7Days.map((day) => {
-            const heightPct = Math.max(8, Math.round((day.count / maxActivity) * 100));
+            const heightPct = Math.max(10, Math.round((day.count / maxActivity) * 100));
             const isToday = day.dateStr === new Date().toISOString().split('T')[0];
 
             return (
@@ -338,13 +355,20 @@ export const ProfileView: React.FC<Props> = ({
                   justifyContent: 'flex-end',
                 }}
               >
-                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: day.count > 0 ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+                <div
+                  style={{
+                    fontSize: '0.78rem',
+                    fontWeight: 800,
+                    color: day.count > 0 ? 'var(--text-primary)' : 'var(--text-muted)',
+                    fontFamily: 'var(--font-mono)',
+                  }}
+                >
                   {day.count}
                 </div>
                 <div
                   style={{
                     width: '100%',
-                    maxWidth: '38px',
+                    maxWidth: '44px',
                     height: `${heightPct}%`,
                     borderRadius: 'var(--radius-sm)',
                     backgroundColor: isToday
@@ -353,14 +377,15 @@ export const ProfileView: React.FC<Props> = ({
                       ? 'var(--accent-primary-subtle)'
                       : 'var(--bg-tertiary)',
                     border: `1px solid ${isToday ? 'var(--accent-primary)' : 'var(--border-subtle)'}`,
+                    boxShadow: isToday ? '0 0 14px rgba(56, 189, 248, 0.4)' : 'none',
                     transition: 'height 0.4s ease',
                   }}
                   title={`${day.dateStr}: ${day.count} Wörter geübt`}
                 />
                 <div
                   style={{
-                    fontSize: '0.72rem',
-                    fontWeight: isToday ? 800 : 500,
+                    fontSize: '0.76rem',
+                    fontWeight: isToday ? 800 : 600,
                     color: isToday ? 'var(--accent-primary)' : 'var(--text-muted)',
                   }}
                 >
@@ -384,79 +409,79 @@ export const ProfileView: React.FC<Props> = ({
         <div
           className="glass-panel"
           style={{
-            padding: '1.5rem',
+            padding: '1.75rem',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.4rem' }}>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, letterSpacing: '-0.01em' }}>
               {t('profile.vocab_mastery')}
             </h3>
             <button
               type="button"
               onClick={() => onNavigateTab('vocab')}
               style={{
-                fontSize: '0.8rem',
-                fontWeight: 700,
+                fontSize: '0.84rem',
+                fontWeight: 800,
                 color: 'var(--accent-primary)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.25rem',
+                gap: '0.35rem',
               }}
             >
               <span>{t('profile.practice_btn')}</span>
-              <ArrowRight size={14} />
+              <ArrowRight size={15} />
             </button>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {/* Level 3: Mastered */}
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.25rem' }}>
-                <span style={{ color: 'var(--color-success)', fontWeight: 600 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.84rem', marginBottom: '0.35rem' }}>
+                <span style={{ color: 'var(--color-success)', fontWeight: 700 }}>
                   {t('profile.mastery_level_3')}
                 </span>
-                <span style={{ fontWeight: 700 }}>{masteryStats.mastered}</span>
+                <span style={{ fontWeight: 800, fontFamily: 'var(--font-mono)' }}>{masteryStats.mastered}</span>
               </div>
-              <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
+              <div style={{ width: '100%', height: '7px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ width: `${(masteryStats.mastered / masteryStats.total) * 100}%`, height: '100%', backgroundColor: 'var(--color-success)' }} />
               </div>
             </div>
 
             {/* Level 2: Familiar */}
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.25rem' }}>
-                <span style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.84rem', marginBottom: '0.35rem' }}>
+                <span style={{ color: 'var(--accent-primary)', fontWeight: 700 }}>
                   {t('profile.mastery_level_2')}
                 </span>
-                <span style={{ fontWeight: 700 }}>{masteryStats.familiar}</span>
+                <span style={{ fontWeight: 800, fontFamily: 'var(--font-mono)' }}>{masteryStats.familiar}</span>
               </div>
-              <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
+              <div style={{ width: '100%', height: '7px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ width: `${(masteryStats.familiar / masteryStats.total) * 100}%`, height: '100%', backgroundColor: 'var(--accent-primary)' }} />
               </div>
             </div>
 
             {/* Level 1: Learning */}
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.25rem' }}>
-                <span style={{ color: 'var(--accent-gold)', fontWeight: 600 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.84rem', marginBottom: '0.35rem' }}>
+                <span style={{ color: 'var(--accent-gold)', fontWeight: 700 }}>
                   {t('profile.mastery_level_1')}
                 </span>
-                <span style={{ fontWeight: 700 }}>{masteryStats.learning}</span>
+                <span style={{ fontWeight: 800, fontFamily: 'var(--font-mono)' }}>{masteryStats.learning}</span>
               </div>
-              <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
+              <div style={{ width: '100%', height: '7px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ width: `${(masteryStats.learning / masteryStats.total) * 100}%`, height: '100%', backgroundColor: 'var(--accent-gold)' }} />
               </div>
             </div>
 
             {/* Level 0: Unseen */}
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.25rem' }}>
-                <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.84rem', marginBottom: '0.35rem' }}>
+                <span style={{ color: 'var(--text-muted)', fontWeight: 700 }}>
                   {t('profile.mastery_level_0')}
                 </span>
-                <span style={{ fontWeight: 700 }}>{masteryStats.unlearned}</span>
+                <span style={{ fontWeight: 800, fontFamily: 'var(--font-mono)' }}>{masteryStats.unlearned}</span>
               </div>
-              <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
+              <div style={{ width: '100%', height: '7px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-full)', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
                 <div style={{ width: `${(masteryStats.unlearned / masteryStats.total) * 100}%`, height: '100%', backgroundColor: 'var(--text-muted)' }} />
               </div>
             </div>
@@ -467,35 +492,35 @@ export const ProfileView: React.FC<Props> = ({
         <div
           className="glass-panel"
           style={{
-            padding: '1.5rem',
+            padding: '1.75rem',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.4rem' }}>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, letterSpacing: '-0.01em' }}>
               {t('profile.grammar_status')}
             </h3>
             <button
               type="button"
               onClick={() => onNavigateTab('grammar')}
               style={{
-                fontSize: '0.8rem',
-                fontWeight: 700,
+                fontSize: '0.84rem',
+                fontWeight: 800,
                 color: 'var(--accent-primary)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.25rem',
+                gap: '0.35rem',
               }}
             >
               <span>{t('profile.view_rules')}</span>
-              <ArrowRight size={14} />
+              <ArrowRight size={15} />
             </button>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem' }}>
             <div
               style={{
-                width: '80px',
-                height: '80px',
+                width: '88px',
+                height: '88px',
                 borderRadius: 'var(--radius-full)',
                 border: '6px solid var(--color-success)',
                 display: 'flex',
@@ -503,19 +528,20 @@ export const ProfileView: React.FC<Props> = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
+                boxShadow: '0 0 16px rgba(16, 185, 129, 0.25)',
               }}
             >
-              <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+              <span style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
                 {learnedRulesCount}
               </span>
-              <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>/ {grammarRules.length}</span>
+              <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 600 }}>/ {grammarRules.length}</span>
             </div>
 
             <div>
-              <div style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+              <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)' }}>
                 {learnedRulesCount} Regeln gemeistert
               </div>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+              <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', marginTop: '0.25rem', lineHeight: 1.45 }}>
                 {t('profile.grammar_learned_desc')}
               </p>
             </div>
@@ -525,17 +551,17 @@ export const ProfileView: React.FC<Props> = ({
           {starredRules.length > 0 && (
             <div
               style={{
-                padding: '0.85rem 1rem',
+                padding: '0.95rem 1.15rem',
                 borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--accent-gold-subtle)',
-                border: '1px solid rgba(245, 158, 11, 0.3)',
+                border: '1px solid rgba(245, 158, 11, 0.35)',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-gold)', fontWeight: 700, fontSize: '0.85rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-gold)', fontWeight: 800, fontSize: '0.88rem' }}>
                 <Star size={16} fill="#f59e0b" />
                 <span>{starredRules.length} {t('profile.rules_bookmarked')}</span>
               </div>
-              <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
                 {t('profile.rules_bookmarked_desc')}
               </p>
             </div>
@@ -548,13 +574,13 @@ export const ProfileView: React.FC<Props> = ({
         <div
           className="glass-panel"
           style={{
-            padding: '1.5rem',
+            padding: '1.75rem',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Star size={18} fill="#f59e0b" color="#f59e0b" />
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <Star size={20} fill="#f59e0b" color="#f59e0b" />
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, letterSpacing: '-0.01em' }}>
                 {t('profile.starred_vocab')} ({starredWords.length})
               </h3>
             </div>
@@ -562,41 +588,41 @@ export const ProfileView: React.FC<Props> = ({
               type="button"
               onClick={() => onNavigateTab('vocab')}
               style={{
-                fontSize: '0.8rem',
-                fontWeight: 700,
+                fontSize: '0.84rem',
+                fontWeight: 800,
                 color: 'var(--accent-gold)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.25rem',
+                gap: '0.35rem',
               }}
             >
               <span>{t('profile.practice_now')}</span>
-              <ArrowRight size={14} />
+              <ArrowRight size={15} />
             </button>
           </div>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
             {starredWords.slice(0, 20).map((word) => (
               <span
                 key={word.german}
                 style={{
-                  padding: '0.35rem 0.65rem',
+                  padding: '0.45rem 0.85rem',
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--bg-tertiary)',
                   border: '1px solid var(--border-subtle)',
-                  fontSize: '0.82rem',
+                  fontSize: '0.86rem',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.35rem',
+                  gap: '0.45rem',
                 }}
               >
                 <GenderBadge gender={word.gender} size="sm" />
-                <strong>{word.german}</strong>
+                <strong style={{ color: 'var(--text-primary)' }}>{word.german}</strong>
                 <span style={{ color: 'var(--text-muted)' }}>→ {word.english}</span>
               </span>
             ))}
             {starredWords.length > 20 && (
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', alignSelf: 'center' }}>
+              <span style={{ fontSize: '0.84rem', color: 'var(--text-muted)', alignSelf: 'center', fontWeight: 600 }}>
                 +{starredWords.length - 20} weitere
               </span>
             )}

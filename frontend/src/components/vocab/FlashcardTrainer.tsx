@@ -12,6 +12,7 @@ import { SpeakerButton } from '../common/SpeakerButton';
 import { ProgressBar } from '../common/ProgressBar';
 import { speakGerman, playSfx } from '../../utils/audio';
 import { storageService } from '../../services/storageService';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 interface Props {
   words: Word[];
@@ -31,6 +32,7 @@ export const FlashcardTrainer: React.FC<Props> = ({
   onFinish,
   onExit,
 }) => {
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [starredMap, setStarredMap] = useState<Record<string, boolean>>({});
@@ -80,7 +82,6 @@ export const FlashcardTrainer: React.FC<Props> = ({
       playSfx('incorrect', profile.soundEffects);
     }
 
-    // Move to next card or complete
     if (currentIndex + 1 < words.length) {
       setIsFlipped(false);
       setCurrentIndex((prev) => prev + 1);
@@ -129,9 +130,20 @@ export const FlashcardTrainer: React.FC<Props> = ({
   if (!currentWord) {
     return (
       <div style={{ textAlign: 'center', padding: '3rem' }}>
-        <p>Keine Wörter zum Lernen gefunden.</p>
-        <button type="button" onClick={onExit} style={{ marginTop: '1rem' }}>
-          Zurück
+        <p style={{ color: 'var(--text-secondary)' }}>Keine Wörter zum Lernen gefunden.</p>
+        <button
+          type="button"
+          onClick={onExit}
+          style={{
+            marginTop: '1rem',
+            padding: '0.65rem 1.25rem',
+            backgroundColor: 'var(--accent-primary)',
+            color: '#0b0f17',
+            fontWeight: 800,
+            borderRadius: 'var(--radius-md)',
+          }}
+        >
+          {t('fc.exit')}
         </button>
       </div>
     );
@@ -153,8 +165,8 @@ export const FlashcardTrainer: React.FC<Props> = ({
             fontWeight: 800,
             color: 'var(--accent-primary)',
             backgroundColor: 'var(--accent-primary-subtle)',
-            padding: '0.1rem 0.3rem',
-            borderRadius: 'var(--radius-sm)',
+            padding: '0.1rem 0.35rem',
+            borderRadius: 'var(--radius-xs)',
           }}
         >
           {part}
@@ -166,7 +178,7 @@ export const FlashcardTrainer: React.FC<Props> = ({
   };
 
   return (
-    <div style={{ maxWidth: '640px', margin: '0 auto', width: '100%' }}>
+    <div style={{ maxWidth: '680px', margin: '0 auto', width: '100%' }}>
       {/* Top Header & Progress */}
       <div
         style={{
@@ -185,51 +197,55 @@ export const FlashcardTrainer: React.FC<Props> = ({
             gap: '0.4rem',
             color: 'var(--text-muted)',
             fontSize: '0.85rem',
-            padding: '0.4rem 0.6rem',
-            borderRadius: 'var(--radius-sm)',
+            fontWeight: 600,
+            padding: '0.4rem 0.75rem',
+            borderRadius: 'var(--radius-full)',
+            backgroundColor: 'var(--bg-tertiary)',
+            border: '1px solid var(--border-subtle)',
           }}
         >
-          <ArrowLeft size={16} />
-          <span>Beenden</span>
+          <ArrowLeft size={15} />
+          <span>{t('fc.exit')}</span>
         </button>
 
-        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-          Karte {currentIndex + 1} von {words.length}
+        <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
+          {t('fc.card')} {currentIndex + 1} {t('fc.of')} {words.length}
         </span>
       </div>
 
-      <div style={{ marginBottom: '1.5rem' }}>
-        <ProgressBar current={currentIndex + 1} total={words.length} height={6} />
+      <div style={{ marginBottom: '1.75rem' }}>
+        <ProgressBar current={currentIndex + 1} total={words.length} height={7} />
       </div>
 
       {/* 3D Flip Card Container */}
       <div
         className="perspective-container"
-        style={{ width: '100%', minHeight: '360px', marginBottom: '1.5rem' }}
+        style={{ width: '100%', minHeight: '380px', marginBottom: '1.75rem' }}
         onClick={handleFlip}
       >
         <div
           className={`flip-card-inner ${isFlipped ? 'is-flipped' : ''}`}
-          style={{ width: '100%', minHeight: '360px', cursor: 'pointer' }}
+          style={{ width: '100%', minHeight: '380px', cursor: 'pointer' }}
         >
           {/* Card Front (German) */}
           <div
-            className="flip-card-front glass-panel"
+            className="flip-card-front glass-panel glow-edge"
             style={{
-              padding: '2rem',
+              padding: '2.25rem',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              boxShadow: 'var(--shadow-lg)',
+              boxShadow: 'var(--shadow-xl)',
               border: '1px solid var(--border-medium)',
               position: 'relative',
+              background: 'linear-gradient(145deg, var(--bg-card-solid) 0%, var(--bg-secondary) 100%)',
             }}
           >
             {/* Top Badges & Actions */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <GenderBadge gender={currentWord.gender} showLabel />
-                <PosBadge pos={currentWord.pos} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <GenderBadge gender={currentWord.gender} showLabel size="md" />
+                <PosBadge pos={currentWord.pos} size="sm" />
                 <CefrBadge level={currentWord.cefr_level || 'A1'} size="sm" />
               </div>
 
@@ -243,33 +259,39 @@ export const FlashcardTrainer: React.FC<Props> = ({
                   type="button"
                   onClick={handleToggleStar}
                   style={{
-                    padding: '0.4rem',
+                    padding: '0.45rem',
                     borderRadius: 'var(--radius-full)',
                     backgroundColor: isStarred ? 'var(--accent-gold-subtle)' : 'var(--bg-tertiary)',
                     color: isStarred ? 'var(--accent-gold)' : 'var(--text-muted)',
-                    border: '1px solid var(--border-subtle)',
+                    border: `1px solid ${isStarred ? 'rgba(245, 158, 11, 0.4)' : 'var(--border-subtle)'}`,
+                    boxShadow: isStarred ? '0 0 12px rgba(245, 158, 11, 0.25)' : 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}
-                  title={isStarred ? 'Gemerkt (Favorit)' : 'Zu Favoriten hinzufügen'}
+                  title={isStarred ? 'Gemerkt' : 'Zu Favoriten'}
                 >
-                  <Star size={18} fill={isStarred ? '#f59e0b' : 'none'} />
+                  <Star size={18} fill={isStarred ? '#f59e0b' : 'none'} color={isStarred ? '#f59e0b' : 'currentColor'} />
                 </button>
               </div>
             </div>
 
             {/* Central German Word */}
-            <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
+            <div style={{ textAlign: 'center', padding: '2.5rem 1rem' }}>
               {currentWord.gender && (
                 <div
                   style={{
-                    fontSize: '1.25rem',
-                    fontWeight: 700,
+                    fontSize: '1.4rem',
+                    fontWeight: 800,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.06em',
                     color:
                       currentWord.gender === 'der'
                         ? 'var(--color-der)'
                         : currentWord.gender === 'die'
                         ? 'var(--color-die)'
                         : 'var(--color-das)',
-                    marginBottom: '0.25rem',
+                    marginBottom: '0.35rem',
                   }}
                 >
                   {currentWord.gender}
@@ -277,11 +299,12 @@ export const FlashcardTrainer: React.FC<Props> = ({
               )}
               <h1
                 style={{
-                  fontSize: '2.5rem',
-                  fontWeight: 800,
-                  letterSpacing: '-0.02em',
+                  fontSize: '3rem',
+                  fontWeight: 900,
+                  letterSpacing: '-0.03em',
                   color: 'var(--text-primary)',
                   lineHeight: 1.15,
+                  textShadow: '0 2px 10px rgba(0, 0, 0, 0.25)',
                 }}
               >
                 {currentWord.german}
@@ -290,12 +313,19 @@ export const FlashcardTrainer: React.FC<Props> = ({
               {currentWord.frequency_rank && (
                 <div
                   style={{
-                    fontSize: '0.75rem',
+                    display: 'inline-block',
+                    fontSize: '0.74rem',
+                    fontWeight: 700,
                     color: 'var(--text-muted)',
-                    marginTop: '0.75rem',
+                    backgroundColor: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border-subtle)',
+                    padding: '0.15rem 0.6rem',
+                    borderRadius: 'var(--radius-full)',
+                    marginTop: '1rem',
+                    fontFamily: 'var(--font-mono)',
                   }}
                 >
-                  Häufigkeitsrang: #{currentWord.frequency_rank}
+                  {t('fc.freq_rank')} #{currentWord.frequency_rank}
                 </div>
               )}
             </div>
@@ -306,43 +336,46 @@ export const FlashcardTrainer: React.FC<Props> = ({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '0.4rem',
+                gap: '0.45rem',
                 color: 'var(--text-muted)',
-                fontSize: '0.8rem',
+                fontSize: '0.82rem',
+                fontWeight: 600,
+                borderTop: '1px solid var(--border-subtle)',
+                paddingTop: '1rem',
               }}
             >
-              <RotateCw size={14} />
-              <span>Klicken oder [Leertaste] zum Umdrehen</span>
+              <RotateCw size={15} color="var(--accent-primary)" />
+              <span>{t('fc.flip_hint')}</span>
             </div>
           </div>
 
           {/* Card Back (English & Details) */}
           <div
-            className="flip-card-back glass-panel"
+            className="flip-card-back glass-panel glow-edge"
             style={{
-              padding: '2rem',
+              padding: '2.25rem',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              boxShadow: 'var(--shadow-lg)',
+              boxShadow: 'var(--shadow-xl)',
               border: '1px solid var(--border-medium)',
               backgroundColor: 'var(--bg-secondary)',
+              background: 'linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%)',
             }}
           >
             {/* Top header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span
-                  style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    color: 'var(--text-muted)',
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  Übersetzung & Kontext
-                </span>
-              </div>
+              <span
+                style={{
+                  fontSize: '0.74rem',
+                  fontWeight: 800,
+                  color: 'var(--accent-primary)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                }}
+              >
+                {t('fc.context_title')}
+              </span>
               <SpeakerButton
                 text={`${currentWord.gender ? currentWord.gender + ' ' : ''}${currentWord.german}`}
                 rate={profile.speechSpeed}
@@ -354,10 +387,11 @@ export const FlashcardTrainer: React.FC<Props> = ({
             <div style={{ padding: '0.75rem 0' }}>
               <h2
                 style={{
-                  fontSize: '1.85rem',
-                  fontWeight: 800,
-                  color: 'var(--accent-primary)',
+                  fontSize: '2.2rem',
+                  fontWeight: 900,
+                  color: 'var(--text-primary)',
                   marginBottom: '0.35rem',
+                  letterSpacing: '-0.02em',
                 }}
               >
                 {currentWord.english}
@@ -366,12 +400,12 @@ export const FlashcardTrainer: React.FC<Props> = ({
               {currentWord.all_translations && currentWord.all_translations !== currentWord.english && (
                 <p
                   style={{
-                    fontSize: '0.85rem',
+                    fontSize: '0.86rem',
                     color: 'var(--text-secondary)',
                     marginBottom: '1rem',
                   }}
                 >
-                  Weitere Bedeutungen: <em>{currentWord.all_translations}</em>
+                  {t('fc.other_translations')} <em>{currentWord.all_translations}</em>
                 </p>
               )}
 
@@ -379,20 +413,21 @@ export const FlashcardTrainer: React.FC<Props> = ({
               {currentWord.example_de && (
                 <div
                   style={{
-                    padding: '0.85rem 1rem',
+                    padding: '1rem 1.25rem',
                     borderRadius: 'var(--radius-md)',
-                    backgroundColor: 'var(--bg-tertiary)',
+                    backgroundColor: 'var(--bg-card-solid)',
                     border: '1px solid var(--border-subtle)',
                     marginTop: '0.75rem',
                     textAlign: 'left',
+                    boxShadow: 'var(--shadow-sm)',
                   }}
                 >
                   <div
                     style={{
-                      fontSize: '0.92rem',
+                      fontSize: '0.96rem',
                       color: 'var(--text-primary)',
-                      lineHeight: 1.4,
-                      marginBottom: '0.25rem',
+                      lineHeight: 1.45,
+                      marginBottom: '0.35rem',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
@@ -403,30 +438,33 @@ export const FlashcardTrainer: React.FC<Props> = ({
                     <SpeakerButton text={currentWord.example_de} size={15} />
                   </div>
                   {currentWord.example_en && (
-                    <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                      {currentWord.example_en}
+                    <div style={{ fontSize: '0.84rem', color: 'var(--text-muted)' }}>
+                      "{currentWord.example_en}"
                     </div>
                   )}
                 </div>
               )}
             </div>
 
-            {/* German Word Reference */}
+            {/* German Word Reference & Shortcut Hint */}
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                fontSize: '0.8rem',
+                fontSize: '0.82rem',
                 color: 'var(--text-muted)',
                 borderTop: '1px solid var(--border-subtle)',
-                paddingTop: '0.5rem',
+                paddingTop: '0.75rem',
               }}
             >
               <span>
-                Deutsch: <strong>{currentWord.gender ? `${currentWord.gender} ` : ''}{currentWord.german}</strong>
+                {t('fc.german_ref')}{' '}
+                <strong style={{ color: 'var(--text-primary)' }}>
+                  {currentWord.gender ? `${currentWord.gender} ` : ''}{currentWord.german}
+                </strong>
               </span>
-              <span>[1-4] zum Bewerten</span>
+              <span style={{ fontWeight: 600 }}>{t('fc.rate_hint')}</span>
             </div>
           </div>
         </div>
@@ -437,91 +475,143 @@ export const FlashcardTrainer: React.FC<Props> = ({
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '0.6rem',
+          gap: '0.75rem',
         }}
       >
+        {/* Again (1) */}
         <button
           type="button"
           onClick={() => handleRating('again')}
           style={{
-            padding: '0.75rem 0.5rem',
+            padding: '0.85rem 0.5rem',
             borderRadius: 'var(--radius-md)',
             backgroundColor: 'var(--color-error-bg)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
+            border: '1px solid var(--color-error-border)',
             color: 'var(--color-error)',
-            fontWeight: 700,
+            fontWeight: 800,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '0.2rem',
+            gap: '0.25rem',
+            boxShadow: 'var(--shadow-sm)',
           }}
           title="Taste [1] drücken"
         >
-          <div style={{ fontSize: '0.85rem' }}>Nochmals</div>
-          <span style={{ fontSize: '0.65rem', opacity: 0.8 }}>Taste 1</span>
+          <div style={{ fontSize: '0.92rem' }}>{t('fc.rating_again')}</div>
+          <span
+            style={{
+              fontSize: '0.68rem',
+              fontWeight: 800,
+              padding: '0.1rem 0.45rem',
+              borderRadius: 'var(--radius-full)',
+              backgroundColor: 'rgba(239, 68, 68, 0.2)',
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
+            [1]
+          </span>
         </button>
 
+        {/* Hard (2) */}
         <button
           type="button"
           onClick={() => handleRating('hard')}
           style={{
-            padding: '0.75rem 0.5rem',
+            padding: '0.85rem 0.5rem',
             borderRadius: 'var(--radius-md)',
-            backgroundColor: 'rgba(245, 158, 11, 0.12)',
-            border: '1px solid rgba(245, 158, 11, 0.3)',
+            backgroundColor: 'var(--accent-gold-subtle)',
+            border: '1px solid rgba(245, 158, 11, 0.35)',
             color: 'var(--accent-gold)',
-            fontWeight: 700,
+            fontWeight: 800,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '0.2rem',
+            gap: '0.25rem',
+            boxShadow: 'var(--shadow-sm)',
           }}
           title="Taste [2] drücken"
         >
-          <div style={{ fontSize: '0.85rem' }}>Schwer</div>
-          <span style={{ fontSize: '0.65rem', opacity: 0.8 }}>Taste 2</span>
+          <div style={{ fontSize: '0.92rem' }}>{t('fc.rating_hard')}</div>
+          <span
+            style={{
+              fontSize: '0.68rem',
+              fontWeight: 800,
+              padding: '0.1rem 0.45rem',
+              borderRadius: 'var(--radius-full)',
+              backgroundColor: 'rgba(245, 158, 11, 0.2)',
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
+            [2]
+          </span>
         </button>
 
+        {/* Good (3) */}
         <button
           type="button"
           onClick={() => handleRating('good')}
           style={{
-            padding: '0.75rem 0.5rem',
+            padding: '0.85rem 0.5rem',
             borderRadius: 'var(--radius-md)',
             backgroundColor: 'var(--accent-primary-subtle)',
-            border: '1px solid rgba(56, 189, 248, 0.3)',
+            border: '1px solid rgba(56, 189, 248, 0.35)',
             color: 'var(--accent-primary)',
-            fontWeight: 700,
+            fontWeight: 800,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '0.2rem',
+            gap: '0.25rem',
+            boxShadow: 'var(--shadow-sm)',
           }}
           title="Taste [3] drücken"
         >
-          <div style={{ fontSize: '0.85rem' }}>Gut</div>
-          <span style={{ fontSize: '0.65rem', opacity: 0.8 }}>Taste 3</span>
+          <div style={{ fontSize: '0.92rem' }}>{t('fc.rating_good')}</div>
+          <span
+            style={{
+              fontSize: '0.68rem',
+              fontWeight: 800,
+              padding: '0.1rem 0.45rem',
+              borderRadius: 'var(--radius-full)',
+              backgroundColor: 'rgba(56, 189, 248, 0.2)',
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
+            [3]
+          </span>
         </button>
 
+        {/* Easy (4) */}
         <button
           type="button"
           onClick={() => handleRating('easy')}
           style={{
-            padding: '0.75rem 0.5rem',
+            padding: '0.85rem 0.5rem',
             borderRadius: 'var(--radius-md)',
             backgroundColor: 'var(--color-success-bg)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
+            border: '1px solid var(--color-success-border)',
             color: 'var(--color-success)',
-            fontWeight: 700,
+            fontWeight: 800,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '0.2rem',
+            gap: '0.25rem',
+            boxShadow: 'var(--shadow-sm)',
           }}
           title="Taste [4] drücken"
         >
-          <div style={{ fontSize: '0.85rem' }}>Einfach</div>
-          <span style={{ fontSize: '0.65rem', opacity: 0.8 }}>Taste 4</span>
+          <div style={{ fontSize: '0.92rem' }}>{t('fc.rating_easy')}</div>
+          <span
+            style={{
+              fontSize: '0.68rem',
+              fontWeight: 800,
+              padding: '0.1rem 0.45rem',
+              borderRadius: 'var(--radius-full)',
+              backgroundColor: 'rgba(16, 185, 129, 0.2)',
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
+            [4]
+          </span>
         </button>
       </div>
     </div>

@@ -13,7 +13,7 @@ interface Props {
 export const SpeakerButton: React.FC<Props> = ({
   text,
   rate = 1.0,
-  size = 18,
+  size = 17,
   className = '',
   title = 'Aussprache anhören (Listen to pronunciation)',
 }) => {
@@ -31,22 +31,30 @@ export const SpeakerButton: React.FC<Props> = ({
       type="button"
       onClick={handleSpeak}
       title={title}
-      className={`speaker-btn ${className}`}
+      className={className}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '0.4rem',
+        padding: '0.45rem',
         borderRadius: 'var(--radius-full)',
         backgroundColor: isPlaying ? 'var(--accent-primary-subtle)' : 'var(--bg-tertiary)',
         color: isPlaying ? 'var(--accent-primary)' : 'var(--text-secondary)',
-        border: '1px solid var(--border-subtle)',
+        border: `1px solid ${isPlaying ? 'var(--accent-primary)' : 'var(--border-subtle)'}`,
+        boxShadow: isPlaying ? '0 0 12px var(--accent-primary-subtle)' : 'var(--shadow-sm)',
         transition: 'all var(--transition-fast)',
         cursor: 'pointer',
+        flexShrink: 0,
       }}
       aria-label={`Pronounce ${text}`}
     >
-      <Volume2 size={size} style={{ transform: isPlaying ? 'scale(1.15)' : 'scale(1)', transition: 'transform 0.15s' }} />
+      <Volume2
+        size={size}
+        style={{
+          transform: isPlaying ? 'scale(1.2)' : 'scale(1)',
+          transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        }}
+      />
     </button>
   );
 };

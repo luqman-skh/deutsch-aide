@@ -113,14 +113,15 @@ export const GrammarExplorer: React.FC<Props> = ({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       {/* Top Banner & Progress Header */}
       <div
         className="glass-panel"
         style={{
-          padding: '1.75rem',
-          background: 'linear-gradient(135deg, var(--bg-card), var(--bg-card-hover))',
+          padding: '2.25rem 2rem',
+          background: 'linear-gradient(135deg, rgba(16, 25, 44, 0.95) 0%, rgba(30, 41, 59, 0.7) 100%)',
           border: '1px solid var(--border-medium)',
+          boxShadow: 'var(--shadow-lg)',
         }}
       >
         <div
@@ -129,85 +130,98 @@ export const GrammarExplorer: React.FC<Props> = ({
             flexWrap: 'wrap',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '1.5rem',
+            gap: '1.75rem',
           }}
         >
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
               <span
                 style={{
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  color: 'var(--accent-primary)',
+                  fontSize: '0.72rem',
+                  fontWeight: 800,
+                  color: '#a855f7',
+                  backgroundColor: 'rgba(168, 85, 247, 0.15)',
+                  padding: '0.2rem 0.6rem',
+                  borderRadius: 'var(--radius-full)',
                   textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
+                  letterSpacing: '0.06em',
+                  border: '1px solid rgba(168, 85, 247, 0.3)',
                 }}
               >
                 {t('grammar.compass')}
               </span>
               <span
                 style={{
-                  fontSize: '0.7rem',
-                  padding: '0.1rem 0.4rem',
+                  fontSize: '0.72rem',
+                  padding: '0.2rem 0.6rem',
                   borderRadius: 'var(--radius-full)',
-                  backgroundColor: 'var(--accent-primary-subtle)',
-                  color: 'var(--accent-primary)',
+                  backgroundColor: 'var(--bg-tertiary)',
+                  color: 'var(--text-secondary)',
                   fontWeight: 700,
+                  border: '1px solid var(--border-subtle)',
                 }}
               >
                 {rules.length} {t('grammar.rules_found')}
               </span>
             </div>
 
-            <h1 style={{ fontSize: '1.85rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
+            <h1 style={{ fontSize: '2.1rem', fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.2 }}>
               {t('grammar.title')}
             </h1>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.94rem', marginTop: '0.4rem' }}>
               {t('grammar.subtitle')}
             </p>
           </div>
 
           {/* Quick Metrics */}
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '0.85rem', flexWrap: 'wrap' }}>
             <div
               style={{
-                padding: '0.75rem 1.25rem',
+                padding: '1rem 1.4rem',
                 borderRadius: 'var(--radius-md)',
-                backgroundColor: 'var(--bg-tertiary)',
-                border: '1px solid var(--border-subtle)',
+                backgroundColor: 'var(--color-success-bg)',
+                border: '1px solid var(--color-success-border)',
+                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.15)',
                 textAlign: 'center',
+                minWidth: '110px',
               }}
             >
-              <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--color-success)' }}>
+              <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--color-success)', fontFamily: 'var(--font-mono)' }}>
                 {stats.learned} / {stats.total}
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              <div style={{ fontSize: '0.74rem', color: 'var(--color-success)', fontWeight: 700, marginTop: '0.1rem' }}>
                 {t('grammar.status_learned')} ({stats.percent}%)
               </div>
             </div>
 
             <div
               style={{
-                padding: '0.75rem 1.25rem',
+                padding: '1rem 1.4rem',
                 borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--accent-gold-subtle)',
-                border: '1px solid rgba(245, 158, 11, 0.3)',
+                border: '1px solid rgba(245, 158, 11, 0.35)',
+                boxShadow: '0 4px 12px rgba(245, 158, 11, 0.15)',
                 textAlign: 'center',
+                minWidth: '110px',
               }}
             >
-              <div style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--accent-gold)' }}>
+              <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--accent-gold)', fontFamily: 'var(--font-mono)' }}>
                 ★ {stats.starred}
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('grammar.status_starred')}</div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--accent-gold)', fontWeight: 700, marginTop: '0.1rem' }}>
+                {t('grammar.status_starred')}
+              </div>
             </div>
           </div>
         </div>
 
         {/* Global Progress Bar */}
-        <div style={{ marginTop: '1.25rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
-            <span>{t('grammar.progress')}</span>
-            <span>{stats.percent}% abgeschlossen</span>
+        <div style={{ marginTop: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '0.45rem' }}>
+            <span style={{ fontWeight: 600 }}>{t('grammar.progress')}</span>
+            <span style={{ fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+              {stats.percent}% abgeschlossen
+            </span>
           </div>
           <div
             style={{
@@ -216,6 +230,8 @@ export const GrammarExplorer: React.FC<Props> = ({
               backgroundColor: 'var(--bg-tertiary)',
               borderRadius: 'var(--radius-full)',
               overflow: 'hidden',
+              border: '1px solid var(--border-subtle)',
+              padding: '1px',
             }}
           >
             <div
@@ -223,7 +239,9 @@ export const GrammarExplorer: React.FC<Props> = ({
                 width: `${stats.percent}%`,
                 height: '100%',
                 backgroundColor: 'var(--color-success)',
-                transition: 'width 0.4s ease',
+                borderRadius: 'var(--radius-full)',
+                boxShadow: '0 0 10px rgba(16, 185, 129, 0.5)',
+                transition: 'width 0.45s ease',
               }}
             />
           </div>
@@ -234,10 +252,10 @@ export const GrammarExplorer: React.FC<Props> = ({
       <div
         className="glass-panel"
         style={{
-          padding: '1.25rem',
+          padding: '1.25rem 1.5rem',
           display: 'flex',
           flexDirection: 'column',
-          gap: '1rem',
+          gap: '1.1rem',
         }}
       >
         {/* Search Input */}
@@ -246,7 +264,7 @@ export const GrammarExplorer: React.FC<Props> = ({
             size={18}
             style={{
               position: 'absolute',
-              left: '1rem',
+              left: '1.1rem',
               top: '50%',
               transform: 'translateY(-50%)',
               color: 'var(--text-muted)',
@@ -262,12 +280,12 @@ export const GrammarExplorer: React.FC<Props> = ({
             placeholder={t('grammar.search_placeholder')}
             style={{
               width: '100%',
-              padding: '0.75rem 1rem 0.75rem 2.6rem',
+              padding: '0.85rem 1.1rem 0.85rem 2.8rem',
               borderRadius: 'var(--radius-md)',
               backgroundColor: 'var(--bg-tertiary)',
-              border: '1px solid var(--border-subtle)',
+              border: '1px solid var(--border-medium)',
               color: 'var(--text-primary)',
-              fontSize: '0.92rem',
+              fontSize: '0.94rem',
               outline: 'none',
             }}
           />
@@ -280,12 +298,12 @@ export const GrammarExplorer: React.FC<Props> = ({
             flexWrap: 'wrap',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '0.75rem',
+            gap: '0.85rem',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-              <Filter size={15} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--text-muted)', fontSize: '0.84rem', fontWeight: 600 }}>
+              <Filter size={16} />
               <span>{t('vocab.filter')}</span>
             </div>
 
@@ -297,13 +315,15 @@ export const GrammarExplorer: React.FC<Props> = ({
                 setDisplayCount(25);
               }}
               style={{
-                padding: '0.45rem 0.75rem',
-                borderRadius: 'var(--radius-md)',
+                padding: '0.45rem 0.85rem',
+                borderRadius: 'var(--radius-sm)',
                 backgroundColor: 'var(--bg-tertiary)',
-                border: '1px solid var(--border-subtle)',
-                fontSize: '0.85rem',
+                border: '1px solid var(--border-medium)',
+                fontSize: '0.84rem',
                 color: 'var(--text-primary)',
-                maxWidth: '220px',
+                fontWeight: 600,
+                maxWidth: '240px',
+                cursor: 'pointer',
               }}
             >
               <option value="all">{t('grammar.all_categories')} ({categories.length})</option>
@@ -322,12 +342,14 @@ export const GrammarExplorer: React.FC<Props> = ({
                 setDisplayCount(25);
               }}
               style={{
-                padding: '0.45rem 0.75rem',
-                borderRadius: 'var(--radius-md)',
+                padding: '0.45rem 0.85rem',
+                borderRadius: 'var(--radius-sm)',
                 backgroundColor: 'var(--bg-tertiary)',
-                border: '1px solid var(--border-subtle)',
-                fontSize: '0.85rem',
+                border: '1px solid var(--border-medium)',
+                fontSize: '0.84rem',
                 color: 'var(--text-primary)',
+                fontWeight: 600,
+                cursor: 'pointer',
               }}
             >
               <option value="all">{t('grammar.all_levels')}</option>
@@ -344,9 +366,9 @@ export const GrammarExplorer: React.FC<Props> = ({
             style={{
               display: 'flex',
               backgroundColor: 'var(--bg-tertiary)',
-              padding: '0.2rem',
+              padding: '0.25rem',
               borderRadius: 'var(--radius-md)',
-              gap: '0.2rem',
+              gap: '0.25rem',
             }}
           >
             <button
@@ -356,12 +378,13 @@ export const GrammarExplorer: React.FC<Props> = ({
                 setDisplayCount(25);
               }}
               style={{
-                padding: '0.35rem 0.65rem',
+                padding: '0.35rem 0.75rem',
                 borderRadius: 'var(--radius-sm)',
-                backgroundColor: statusFilter === 'all' ? 'var(--bg-card)' : 'transparent',
+                backgroundColor: statusFilter === 'all' ? 'var(--bg-card-solid)' : 'transparent',
                 color: statusFilter === 'all' ? 'var(--text-primary)' : 'var(--text-muted)',
                 fontSize: '0.8rem',
-                fontWeight: statusFilter === 'all' ? 700 : 500,
+                fontWeight: statusFilter === 'all' ? 800 : 500,
+                boxShadow: statusFilter === 'all' ? 'var(--shadow-sm)' : 'none',
               }}
             >
               {t('grammar.status_all')} ({rules.length})
@@ -374,12 +397,13 @@ export const GrammarExplorer: React.FC<Props> = ({
                 setDisplayCount(25);
               }}
               style={{
-                padding: '0.35rem 0.65rem',
+                padding: '0.35rem 0.75rem',
                 borderRadius: 'var(--radius-sm)',
-                backgroundColor: statusFilter === 'unlearned' ? 'var(--bg-card)' : 'transparent',
+                backgroundColor: statusFilter === 'unlearned' ? 'var(--bg-card-solid)' : 'transparent',
                 color: statusFilter === 'unlearned' ? 'var(--text-primary)' : 'var(--text-muted)',
                 fontSize: '0.8rem',
-                fontWeight: statusFilter === 'unlearned' ? 700 : 500,
+                fontWeight: statusFilter === 'unlearned' ? 800 : 500,
+                boxShadow: statusFilter === 'unlearned' ? 'var(--shadow-sm)' : 'none',
               }}
             >
               {t('grammar.status_unlearned')}
@@ -392,12 +416,13 @@ export const GrammarExplorer: React.FC<Props> = ({
                 setDisplayCount(25);
               }}
               style={{
-                padding: '0.35rem 0.65rem',
+                padding: '0.35rem 0.75rem',
                 borderRadius: 'var(--radius-sm)',
-                backgroundColor: statusFilter === 'learned' ? 'var(--bg-card)' : 'transparent',
+                backgroundColor: statusFilter === 'learned' ? 'var(--bg-card-solid)' : 'transparent',
                 color: statusFilter === 'learned' ? 'var(--color-success)' : 'var(--text-muted)',
                 fontSize: '0.8rem',
-                fontWeight: statusFilter === 'learned' ? 700 : 500,
+                fontWeight: statusFilter === 'learned' ? 800 : 500,
+                boxShadow: statusFilter === 'learned' ? 'var(--shadow-sm)' : 'none',
               }}
             >
               {t('grammar.status_learned')} ({stats.learned})
@@ -410,12 +435,13 @@ export const GrammarExplorer: React.FC<Props> = ({
                 setDisplayCount(25);
               }}
               style={{
-                padding: '0.35rem 0.65rem',
+                padding: '0.35rem 0.75rem',
                 borderRadius: 'var(--radius-sm)',
-                backgroundColor: statusFilter === 'starred' ? 'var(--bg-card)' : 'transparent',
+                backgroundColor: statusFilter === 'starred' ? 'var(--bg-card-solid)' : 'transparent',
                 color: statusFilter === 'starred' ? 'var(--accent-gold)' : 'var(--text-muted)',
                 fontSize: '0.8rem',
-                fontWeight: statusFilter === 'starred' ? 700 : 500,
+                fontWeight: statusFilter === 'starred' ? 800 : 500,
+                boxShadow: statusFilter === 'starred' ? 'var(--shadow-sm)' : 'none',
               }}
             >
               ★ {t('grammar.status_starred')}
@@ -426,8 +452,8 @@ export const GrammarExplorer: React.FC<Props> = ({
 
       {/* Rules List Results */}
       <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', padding: '0 0.25rem' }}>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem', padding: '0 0.25rem' }}>
+          <span style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
             <strong>{filteredRules.length}</strong> {t('grammar.rules_found')}
           </span>
         </div>
@@ -436,16 +462,16 @@ export const GrammarExplorer: React.FC<Props> = ({
           <div
             className="glass-panel"
             style={{
-              padding: '3rem 2rem',
+              padding: '3.5rem 2rem',
               textAlign: 'center',
               color: 'var(--text-muted)',
             }}
           >
-            <BookOpen size={40} style={{ margin: '0 auto 1rem auto', opacity: 0.5 }} />
-            <h3 style={{ fontSize: '1.15rem', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+            <BookOpen size={44} style={{ margin: '0 auto 1.25rem auto', opacity: 0.4 }} />
+            <h3 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 800 }}>
               {t('grammar.no_rules')}
             </h3>
-            <p style={{ fontSize: '0.85rem', maxWidth: '400px', margin: '0 auto 1rem auto' }}>
+            <p style={{ fontSize: '0.88rem', maxWidth: '420px', margin: '0 auto 1.25rem auto', lineHeight: 1.5 }}>
               {t('grammar.no_rules_desc')}
             </p>
             <button
@@ -457,19 +483,19 @@ export const GrammarExplorer: React.FC<Props> = ({
                 setStatusFilter('all');
               }}
               style={{
-                padding: '0.5rem 1rem',
+                padding: '0.65rem 1.25rem',
                 borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--accent-primary)',
                 color: '#0b0f17',
-                fontWeight: 700,
-                fontSize: '0.85rem',
+                fontWeight: 800,
+                fontSize: '0.88rem',
               }}
             >
               {t('grammar.reset_filter')}
             </button>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
             {displayedRules.map((rule) => {
               const progress = grammarProgressMap[rule.id];
               return (
@@ -492,14 +518,15 @@ export const GrammarExplorer: React.FC<Props> = ({
                 type="button"
                 onClick={() => setDisplayCount((prev) => prev + 25)}
                 style={{
-                  padding: '0.85rem',
+                  padding: '0.95rem',
                   borderRadius: 'var(--radius-md)',
-                  backgroundColor: 'var(--bg-card)',
+                  backgroundColor: 'var(--bg-card-solid)',
                   border: '1px solid var(--border-medium)',
                   color: 'var(--text-primary)',
-                  fontWeight: 700,
-                  fontSize: '0.9rem',
-                  marginTop: '0.5rem',
+                  fontWeight: 800,
+                  fontSize: '0.92rem',
+                  marginTop: '0.75rem',
+                  boxShadow: 'var(--shadow-sm)',
                 }}
               >
                 {t('grammar.load_more')} ({filteredRules.length - displayedRules.length} verbleibend)
