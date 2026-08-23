@@ -148,7 +148,7 @@ export const ProfileView: React.FC<Props> = ({
                     border: '1px solid rgba(56, 189, 248, 0.3)',
                   }}
                 >
-                  Stufe {profile.level}: {profile.levelTitle}
+                  {t('profile.level')} {profile.level}: {profile.levelTitle}
                 </span>
                 {profile.email && (
                   <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
@@ -539,7 +539,7 @@ export const ProfileView: React.FC<Props> = ({
 
             <div>
               <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                {learnedRulesCount} Regeln gemeistert
+                {learnedRulesCount} {t('profile.rules_learned')}
               </div>
               <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', marginTop: '0.25rem', lineHeight: 1.45 }}>
                 {t('profile.grammar_learned_desc')}

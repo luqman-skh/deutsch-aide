@@ -28,14 +28,15 @@ export const WordDetailModal: React.FC<Props> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(5, 8, 15, 0.82)',
+        backgroundColor: 'rgba(5, 8, 15, 0.85)',
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)',
         zIndex: 100,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '1.25rem',
+        padding: '1rem',
+        overflowY: 'auto',
       }}
       onClick={onClose}
     >
@@ -44,12 +45,15 @@ export const WordDetailModal: React.FC<Props> = ({
         style={{
           width: '100%',
           maxWidth: '560px',
-          padding: '2.25rem',
+          maxHeight: 'min(90vh, 650px)',
+          overflowY: 'auto',
+          padding: '2rem 1.75rem',
           backgroundColor: 'var(--bg-card-solid)',
           border: '1px solid var(--border-medium)',
           boxShadow: 'var(--shadow-xl)',
           position: 'relative',
           borderRadius: 'var(--radius-xl)',
+          margin: 'auto',
         }}
         onClick={(e) => e.stopPropagation()}
       >

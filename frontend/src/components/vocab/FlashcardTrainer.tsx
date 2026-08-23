@@ -220,24 +220,23 @@ export const FlashcardTrainer: React.FC<Props> = ({
       {/* 3D Flip Card Container */}
       <div
         className="perspective-container"
-        style={{ width: '100%', minHeight: '380px', marginBottom: '1.75rem' }}
+        style={{ width: '100%', height: '420px', minHeight: '420px', marginBottom: '1.75rem', position: 'relative' }}
         onClick={handleFlip}
       >
         <div
           className={`flip-card-inner ${isFlipped ? 'is-flipped' : ''}`}
-          style={{ width: '100%', minHeight: '380px', cursor: 'pointer' }}
+          style={{ width: '100%', height: '100%', cursor: 'pointer', position: 'relative' }}
         >
           {/* Card Front (German) */}
           <div
             className="flip-card-front glass-panel glow-edge"
             style={{
-              padding: '2.25rem',
+              padding: '2rem 2.25rem',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
               boxShadow: 'var(--shadow-xl)',
               border: '1px solid var(--border-medium)',
-              position: 'relative',
               background: 'linear-gradient(145deg, var(--bg-card-solid) 0%, var(--bg-secondary) 100%)',
             }}
           >
@@ -353,7 +352,7 @@ export const FlashcardTrainer: React.FC<Props> = ({
           <div
             className="flip-card-back glass-panel glow-edge"
             style={{
-              padding: '2.25rem',
+              padding: '2rem 2.25rem',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',

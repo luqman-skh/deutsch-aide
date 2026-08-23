@@ -85,14 +85,15 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(5, 8, 15, 0.82)',
+        backgroundColor: 'rgba(5, 8, 15, 0.85)',
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)',
         zIndex: 100,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '1.25rem',
+        padding: '1rem',
+        overflowY: 'auto',
       }}
       onClick={onClose}
     >
@@ -100,13 +101,16 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
         className="glass-panel animate-pop-in glow-edge"
         style={{
           width: '100%',
-          maxWidth: '480px',
-          padding: '2.5rem 2.25rem',
+          maxWidth: '460px',
+          maxHeight: 'min(90vh, 640px)',
+          overflowY: 'auto',
+          padding: '1.75rem',
           backgroundColor: 'var(--bg-card-solid)',
           border: '1px solid var(--border-medium)',
           boxShadow: 'var(--shadow-xl)',
           position: 'relative',
           borderRadius: 'var(--radius-xl)',
+          margin: 'auto',
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -116,44 +120,45 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
           onClick={onClose}
           style={{
             position: 'absolute',
-            top: '1.25rem',
-            right: '1.25rem',
+            top: '1rem',
+            right: '1rem',
             color: 'var(--text-muted)',
-            padding: '0.4rem',
+            padding: '0.35rem',
             borderRadius: 'var(--radius-full)',
             backgroundColor: 'var(--bg-tertiary)',
             border: '1px solid var(--border-subtle)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            zIndex: 10,
           }}
         >
-          <X size={18} />
+          <X size={17} />
         </button>
 
         {/* Brand Icon Header */}
-        <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '1.25rem', marginTop: '0.25rem' }}>
           <div
             style={{
-              width: '60px',
-              height: '60px',
-              borderRadius: 'var(--radius-lg)',
+              width: '50px',
+              height: '50px',
+              borderRadius: 'var(--radius-md)',
               background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #06b6d4 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto 1.15rem auto',
+              margin: '0 auto 0.75rem auto',
               color: '#ffffff',
-              boxShadow: '0 4px 16px rgba(37, 99, 235, 0.35)',
+              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
             }}
           >
-            <ShieldCheck size={32} />
+            <ShieldCheck size={28} />
           </div>
 
-          <h2 style={{ fontSize: '1.65rem', fontWeight: 900, marginBottom: '0.35rem', letterSpacing: '-0.02em' }}>
+          <h2 style={{ fontSize: '1.45rem', fontWeight: 900, marginBottom: '0.25rem', letterSpacing: '-0.02em' }}>
             {mode === 'signin' ? t('auth.sign_in_title') : t('auth.sign_up_title')}
           </h2>
-          <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
             {mode === 'signin' ? t('auth.sign_in_desc') : t('auth.sign_up_desc')}
           </p>
         </div>
@@ -165,7 +170,7 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
             backgroundColor: 'var(--bg-tertiary)',
             padding: '0.25rem',
             borderRadius: 'var(--radius-md)',
-            marginBottom: '1.5rem',
+            marginBottom: '1.15rem',
           }}
         >
           <button
@@ -177,12 +182,12 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
             }}
             style={{
               flex: 1,
-              padding: '0.6rem',
+              padding: '0.5rem',
               borderRadius: 'var(--radius-sm)',
               backgroundColor: mode === 'signin' ? 'var(--bg-card-solid)' : 'transparent',
               color: mode === 'signin' ? 'var(--text-primary)' : 'var(--text-muted)',
               fontWeight: mode === 'signin' ? 800 : 500,
-              fontSize: '0.88rem',
+              fontSize: '0.84rem',
               boxShadow: mode === 'signin' ? 'var(--shadow-sm)' : 'none',
             }}
           >
@@ -197,12 +202,12 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
             }}
             style={{
               flex: 1,
-              padding: '0.6rem',
+              padding: '0.5rem',
               borderRadius: 'var(--radius-sm)',
               backgroundColor: mode === 'signup' ? 'var(--bg-card-solid)' : 'transparent',
               color: mode === 'signup' ? 'var(--text-primary)' : 'var(--text-muted)',
               fontWeight: mode === 'signup' ? 800 : 500,
-              fontSize: '0.88rem',
+              fontSize: '0.84rem',
               boxShadow: mode === 'signup' ? 'var(--shadow-sm)' : 'none',
             }}
           >
@@ -218,17 +223,17 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem',
-              padding: '0.85rem 1rem',
+              padding: '0.7rem 0.85rem',
               borderRadius: 'var(--radius-md)',
               backgroundColor: 'var(--color-error-bg)',
               border: '1px solid var(--color-error-border)',
               color: 'var(--color-error)',
-              fontSize: '0.86rem',
-              marginBottom: '1.35rem',
+              fontSize: '0.82rem',
+              marginBottom: '1rem',
               fontWeight: 600,
             }}
           >
-            <AlertCircle size={18} style={{ flexShrink: 0 }} />
+            <AlertCircle size={16} style={{ flexShrink: 0 }} />
             <span>{errorMsg}</span>
           </div>
         )}
@@ -240,30 +245,30 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem',
-              padding: '0.85rem 1rem',
+              padding: '0.7rem 0.85rem',
               borderRadius: 'var(--radius-md)',
               backgroundColor: 'var(--color-success-bg)',
               border: '1px solid var(--color-success-border)',
               color: 'var(--color-success)',
-              fontSize: '0.86rem',
-              marginBottom: '1.35rem',
+              fontSize: '0.82rem',
+              marginBottom: '1rem',
               fontWeight: 600,
             }}
           >
-            <CheckCircle2 size={18} style={{ flexShrink: 0 }} />
+            <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
             <span>{successMsg}</span>
           </div>
         )}
 
         {/* Auth Form */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
           {mode === 'signup' && (
             <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.4rem', color: 'var(--text-primary)' }}>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.35rem', color: 'var(--text-primary)' }}>
                 {t('auth.name_label')}
               </label>
               <div style={{ position: 'relative' }}>
-                <UserIcon size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <UserIcon size={15} style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                 <input
                   type="text"
                   value={displayName}
@@ -271,12 +276,12 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
                   placeholder="z. B. Max Mustermann"
                   style={{
                     width: '100%',
-                    padding: '0.75rem 1rem 0.75rem 2.6rem',
+                    padding: '0.65rem 0.85rem 0.65rem 2.4rem',
                     borderRadius: 'var(--radius-md)',
                     backgroundColor: 'var(--bg-tertiary)',
                     border: '1px solid var(--border-medium)',
                     color: 'var(--text-primary)',
-                    fontSize: '0.94rem',
+                    fontSize: '0.9rem',
                     outline: 'none',
                   }}
                 />
@@ -285,11 +290,11 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
           )}
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.4rem', color: 'var(--text-primary)' }}>
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.35rem', color: 'var(--text-primary)' }}>
               {t('auth.email_label')}
             </label>
             <div style={{ position: 'relative' }}>
-              <Mail size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <Mail size={15} style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input
                 type="email"
                 required
@@ -299,12 +304,12 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
                 autoComplete="email"
                 style={{
                   width: '100%',
-                  padding: '0.75rem 1rem 0.75rem 2.6rem',
+                  padding: '0.65rem 0.85rem 0.65rem 2.4rem',
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--bg-tertiary)',
                   border: '1px solid var(--border-medium)',
                   color: 'var(--text-primary)',
-                  fontSize: '0.94rem',
+                  fontSize: '0.9rem',
                   outline: 'none',
                 }}
               />
@@ -312,11 +317,11 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.4rem', color: 'var(--text-primary)' }}>
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.35rem', color: 'var(--text-primary)' }}>
               {t('auth.password_label')}
             </label>
             <div style={{ position: 'relative' }}>
-              <Lock size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <Lock size={15} style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
@@ -326,12 +331,12 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
                 autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
                 style={{
                   width: '100%',
-                  padding: '0.75rem 2.6rem 0.75rem 2.6rem',
+                  padding: '0.65rem 2.4rem 0.65rem 2.4rem',
                   borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--bg-tertiary)',
                   border: '1px solid var(--border-medium)',
                   color: 'var(--text-primary)',
-                  fontSize: '0.94rem',
+                  fontSize: '0.9rem',
                   outline: 'none',
                 }}
               />
@@ -340,13 +345,13 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
                 onClick={() => setShowPassword(!showPassword)}
                 style={{
                   position: 'absolute',
-                  right: '1rem',
+                  right: '0.85rem',
                   top: '50%',
                   transform: 'translateY(-50%)',
                   color: 'var(--text-muted)',
                 }}
               >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
             </div>
           </div>
@@ -355,33 +360,33 @@ export const AuthModal: React.FC<Props> = ({ isOpen, onClose, onSuccess }) => {
             type="submit"
             disabled={isLoading}
             style={{
-              marginTop: '0.75rem',
-              padding: '1rem',
+              marginTop: '0.5rem',
+              padding: '0.85rem',
               borderRadius: 'var(--radius-md)',
               backgroundColor: 'var(--accent-primary)',
               color: '#0b0f17',
               fontWeight: 900,
-              fontSize: '1rem',
+              fontSize: '0.95rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '0.5rem',
+              gap: '0.45rem',
               cursor: isLoading ? 'wait' : 'pointer',
-              boxShadow: '0 4px 16px rgba(56, 189, 248, 0.4)',
+              boxShadow: '0 4px 14px rgba(56, 189, 248, 0.35)',
             }}
           >
             <span>{isLoading ? (mode === 'signin' ? t('auth.signing_in') : t('auth.signing_up')) : (mode === 'signin' ? t('auth.sign_in') : t('auth.sign_up'))}</span>
-            <ArrowRight size={18} />
+            <ArrowRight size={16} />
           </button>
         </form>
 
         {/* Footer Guest Link */}
-        <div style={{ marginTop: '1.75rem', textAlign: 'center', borderTop: '1px solid var(--border-subtle)', paddingTop: '1.15rem' }}>
+        <div style={{ marginTop: '1.25rem', textAlign: 'center', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.85rem' }}>
           <button
             type="button"
             onClick={handleGuest}
             style={{
-              fontSize: '0.86rem',
+              fontSize: '0.82rem',
               color: 'var(--text-secondary)',
               fontWeight: 600,
               textDecoration: 'underline',

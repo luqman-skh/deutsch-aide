@@ -225,6 +225,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'profile.rules_bookmarked_desc': 'Wiederhole gemerkte Regeln regelmäßig mit den interaktiven Übungen.',
     'profile.starred_vocab': 'Gemerkte Vokabeln',
     'profile.practice_now': 'Jetzt üben',
+    'profile.level': 'Stufe',
+    'profile.rules_learned': 'Regeln gemeistert',
 
     // Settings Modal
     'settings.title': 'Einstellungen & Konfiguration',
@@ -493,6 +495,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'profile.rules_bookmarked_desc': 'Regularly review bookmarked rules with interactive exercises.',
     'profile.starred_vocab': 'Bookmarked Vocabulary',
     'profile.practice_now': 'Practice Now',
+    'profile.level': 'Level',
+    'profile.rules_learned': 'Rules Mastered',
 
     // Settings Modal
     'settings.title': 'Settings & Configuration',
