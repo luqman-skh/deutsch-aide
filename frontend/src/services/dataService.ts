@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured } from './supabase';
-import type { Word, GrammarRule, SentenceItem } from '../types';
+import type { Word, GrammarRule, SentenceItem, WordProgress } from '../types';
+import { storageService } from './storageService';
 
 // Bundled fallback datasets
 import fallbackVocab from '../data/vocab_a1.json';
@@ -275,6 +276,53 @@ class DataService {
     } catch (err: any) {
       return { success: false, message: `Failed to seed data: ${err.message || err}` };
     }
+  }
+
+  async getUserWordProgress(userId?: string): Promise<{ data: Record<string, WordProgress>; source: 'supabase' | 'local' }> {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        let query = supabase.from('user_word_progress').select('*');
+        if (userId) {
+          query = query.eq('user_id', userId);
+        }
+        const { data, error } = await query;
+        if (!error && data && data.length > 0) {
+          const progressMap: Record<string, WordProgress> = {};
+          data.forEach((row: any) => {
+            const key = (row.word_key || row.word || '').toLowerCase().trim();
+            if (key) {
+              const timesCorrect = row.times_correct || 0;
+              const timesIncorrect = row.times_incorrect || 0;
+              const timesReviewed = row.times_reviewed ?? (timesCorrect + timesIncorrect);
+              const computedMastery = row.mastery !== undefined && row.mastery !== null
+                ? row.mastery
+                : timesCorrect >= 4
+                ? 3
+                : timesCorrect >= 2
+                ? 2
+                : timesCorrect >= 1
+                ? 1
+                : 0;
+
+              progressMap[key] = {
+                wordKey: key,
+                mastery: computedMastery as any,
+                timesReviewed,
+                timesCorrect,
+                timesIncorrect,
+                lastReviewedAt: row.last_reviewed_at || new Date().toISOString(),
+                nextReviewAt: row.next_review_at || new Date().toISOString(),
+                starred: Boolean(row.starred),
+              };
+            }
+          });
+          return { data: progressMap, source: 'supabase' };
+        }
+      } catch (err) {
+        console.warn('Supabase fetch error for user_word_progress:', err);
+      }
+    }
+    return { data: storageService.getAllWordProgress(), source: 'local' };
   }
 }
 
