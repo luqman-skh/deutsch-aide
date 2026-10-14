@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabase';
-import type { Word, GrammarRule, SentenceItem, WordProgress } from '../types';
+import type { Word, GrammarRule, SentenceItem, WordProgress, GrammarProgress, UserProfile } from '../types';
 import { storageService } from './storageService';
 
 // Bundled fallback datasets
@@ -281,10 +281,15 @@ class DataService {
   async getUserWordProgress(userId?: string): Promise<{ data: Record<string, WordProgress>; source: 'supabase' | 'local' }> {
     if (isSupabaseConfigured && supabase) {
       try {
+        const isUuid = Boolean(userId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId));
         let query = supabase.from('user_word_progress').select('*');
-        if (userId) {
-          query = query.eq('user_id', userId);
+        if (isUuid) {
+          query = query.eq('user_id', userId!);
+        } else if (userId) {
+          // If userId was passed but isn't a UUID (e.g. email or guest), don't query uuid column
+          return { data: storageService.getAllWordProgress(), source: 'local' };
         }
+
         const { data, error } = await query;
         if (!error && data && data.length > 0) {
           const progressMap: Record<string, WordProgress> = {};
@@ -323,6 +328,191 @@ class DataService {
       }
     }
     return { data: storageService.getAllWordProgress(), source: 'local' };
+  }
+
+  async syncProgressDirect(
+    userId: string,
+    profile: UserProfile,
+    wordsProgress: Record<string, WordProgress>,
+    grammarProgress: Record<string, GrammarProgress>
+  ): Promise<boolean> {
+    if (!isSupabaseConfigured || !supabase || !userId) return false;
+
+    try {
+      // 1. Sync profile
+      await supabase.from('user_profiles').upsert(
+        {
+          user_id: userId,
+          email: profile.email,
+          display_name: profile.name,
+          target_level: profile.targetLevel,
+          xp: profile.xp,
+          level: profile.level,
+          level_title: profile.levelTitle,
+          streak: profile.streak,
+          last_active_date: profile.lastActiveDate || null,
+          daily_goal: profile.dailyGoal,
+          today_words_practiced: profile.todayWordsPracticed,
+          today_date: profile.todayDate || null,
+          rush_high_score: profile.rushHighScore,
+          theme: profile.theme,
+          language: profile.language || 'de',
+          sound_effects: profile.soundEffects,
+          speech_speed: profile.speechSpeed,
+        },
+        { onConflict: 'user_id' }
+      );
+
+      // 2. Sync words
+      if (!this.wordsCache) {
+        await this.getWords();
+      }
+      const wordMap = new Map<string, number | string>();
+      (this.wordsCache || []).forEach((w) => {
+        if (w.id) wordMap.set(w.german.toLowerCase().trim(), w.id);
+      });
+
+      const wordRows = Object.values(wordsProgress)
+        .filter((wp) => wordMap.has(wp.wordKey.toLowerCase().trim()))
+        .map((wp) => ({
+          user_id: userId,
+          word_id: wordMap.get(wp.wordKey.toLowerCase().trim()),
+          word_key: wp.wordKey.toLowerCase().trim(),
+          learning_status: wp.mastery >= 2 ? 'known' : 'learning',
+          mastery: wp.mastery,
+          times_reviewed: wp.timesReviewed,
+          times_correct: wp.timesCorrect,
+          times_incorrect: wp.timesIncorrect,
+          last_reviewed_at: wp.lastReviewedAt || null,
+          next_review_at: wp.nextReviewAt || null,
+          starred: wp.starred,
+        }));
+
+      for (let i = 0; i < wordRows.length; i += 100) {
+        await supabase.from('user_word_progress').upsert(wordRows.slice(i, i + 100), {
+          onConflict: 'user_id,word_key',
+        });
+      }
+
+      // 3. Sync grammar
+      const grammarRows = Object.values(grammarProgress).map((gp) => ({
+        user_id: userId,
+        rule_id: gp.ruleId,
+        learned: gp.learned,
+        starred: gp.starred,
+        quiz_score: gp.quizScore || 0,
+        times_reviewed: 1,
+        last_studied_at: gp.lastStudiedAt || null,
+      }));
+
+      for (let i = 0; i < grammarRows.length; i += 100) {
+        await supabase.from('user_grammar_progress').upsert(grammarRows.slice(i, i + 100), {
+          onConflict: 'user_id,rule_id',
+        });
+      }
+
+      // 4. Daily activity
+      if (profile.todayDate) {
+        await supabase.from('user_daily_activity').upsert(
+          {
+            user_id: userId,
+            activity_date: profile.todayDate,
+            words_practiced: profile.todayWordsPracticed,
+            xp_earned: profile.xp,
+          },
+          { onConflict: 'user_id,activity_date' }
+        );
+      }
+
+      return true;
+    } catch (err) {
+      console.warn('Direct Supabase progress sync failed:', err);
+      return false;
+    }
+  }
+
+  async getUserCloudProgress(userId: string): Promise<{
+    profile?: Partial<UserProfile>;
+    wordsProgress?: Record<string, WordProgress>;
+    grammarProgress?: Record<string, GrammarProgress>;
+  } | null> {
+    if (!isSupabaseConfigured || !supabase || !userId) return null;
+
+    try {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+      if (!isUuid) return null;
+
+      const [profRes, wordsRes, gramRes] = await Promise.all([
+        supabase.from('user_profiles').select('*').eq('user_id', userId).maybeSingle(),
+        supabase.from('user_word_progress').select('*').eq('user_id', userId),
+        supabase.from('user_grammar_progress').select('*').eq('user_id', userId),
+      ]);
+
+      let profile: Partial<UserProfile> | undefined;
+      if (profRes.data) {
+        const p = profRes.data;
+        profile = {
+          userId: p.user_id,
+          name: p.display_name || 'Deutschlerner',
+          email: p.email,
+          targetLevel: p.target_level || 'A1',
+          xp: p.xp || 0,
+          level: p.level || 1,
+          levelTitle: p.level_title || 'Anfänger (Novice)',
+          streak: p.streak || 0,
+          lastActiveDate: p.last_active_date,
+          dailyGoal: p.daily_goal || 15,
+          todayWordsPracticed: p.today_words_practiced || 0,
+          todayDate: p.today_date,
+          rushHighScore: p.rush_high_score || 0,
+          theme: p.theme || 'dark',
+          language: p.language || 'de',
+          soundEffects: p.sound_effects ?? true,
+          speechSpeed: p.speech_speed || 1.0,
+        };
+      }
+
+      let wordsProgress: Record<string, WordProgress> | undefined;
+      if (wordsRes.data && wordsRes.data.length > 0) {
+        wordsProgress = {};
+        wordsRes.data.forEach((row: any) => {
+          const k = (row.word_key || '').toLowerCase().trim();
+          if (k) {
+            wordsProgress![k] = {
+              wordKey: k,
+              mastery: row.mastery || 0,
+              timesReviewed: row.times_reviewed || 0,
+              timesCorrect: row.times_correct || 0,
+              timesIncorrect: row.times_incorrect || 0,
+              lastReviewedAt: row.last_reviewed_at || new Date().toISOString(),
+              nextReviewAt: row.next_review_at || new Date().toISOString(),
+              starred: Boolean(row.starred),
+            };
+          }
+        });
+      }
+
+      let grammarProgress: Record<string, GrammarProgress> | undefined;
+      if (gramRes.data && gramRes.data.length > 0) {
+        grammarProgress = {};
+        gramRes.data.forEach((row: any) => {
+          if (row.rule_id) {
+            grammarProgress![row.rule_id] = {
+              ruleId: row.rule_id,
+              learned: Boolean(row.learned),
+              starred: Boolean(row.starred),
+              quizScore: row.quiz_score || 0,
+              lastStudiedAt: row.last_studied_at || new Date().toISOString(),
+            };
+          }
+        });
+      }
+
+      return { profile, wordsProgress, grammarProgress };
+    } catch (err) {
+      console.warn('Failed to fetch user cloud progress directly:', err);
+      return null;
+    }
   }
 }
 

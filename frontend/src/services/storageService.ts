@@ -42,6 +42,25 @@ function calculateLevel(xp: number): { level: number; title: string; nextLevelXp
 }
 
 class StorageService {
+  private listeners: (() => void)[] = [];
+
+  onProgressChange(listener: () => void): () => void {
+    this.listeners.push(listener);
+    return () => {
+      this.listeners = this.listeners.filter((l) => l !== listener);
+    };
+  }
+
+  private notifyChange(): void {
+    this.listeners.forEach((fn) => {
+      try {
+        fn();
+      } catch (err) {
+        console.warn('StorageService listener error:', err);
+      }
+    });
+  }
+
   getProfile(): UserProfile {
     const today = getTodayString();
     const yesterday = getYesterdayString();
@@ -104,6 +123,7 @@ class StorageService {
     profile.level = level;
     profile.levelTitle = title;
     localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+    this.notifyChange();
   }
 
   getAllWordProgress(): Record<string, WordProgress> {
@@ -117,6 +137,7 @@ class StorageService {
 
   saveAllWordProgress(progressMap: Record<string, WordProgress>): void {
     localStorage.setItem(WORDS_PROGRESS_KEY, JSON.stringify(progressMap));
+    this.notifyChange();
   }
 
   getWordProgress(german: string): WordProgress | undefined {
@@ -239,6 +260,7 @@ class StorageService {
 
   saveAllGrammarProgress(progressMap: Record<string, GrammarProgress>): void {
     localStorage.setItem(GRAMMAR_PROGRESS_KEY, JSON.stringify(progressMap));
+    this.notifyChange();
   }
 
   toggleLearnedRule(ruleId: string): boolean {
@@ -316,6 +338,78 @@ class StorageService {
       return true;
     }
     return false;
+  }
+
+  mergeCloudProgress(
+    cloudProfile?: Partial<UserProfile>,
+    cloudWords?: Record<string, WordProgress>,
+    cloudGrammar?: Record<string, GrammarProgress>
+  ): UserProfile {
+    const localProfile = this.getProfile();
+    const localWords = this.getAllWordProgress();
+    const localGrammar = this.getAllGrammarProgress();
+
+    // 1. Merge Profile: prioritize cloud if higher XP or non-zero, keep local preferences
+    const mergedProfile: UserProfile = {
+      ...localProfile,
+      ...(cloudProfile || {}),
+      name: cloudProfile?.name || localProfile.name,
+      xp: Math.max(localProfile.xp, cloudProfile?.xp || 0),
+      streak: Math.max(localProfile.streak, cloudProfile?.streak || 0),
+      todayWordsPracticed: Math.max(localProfile.todayWordsPracticed, cloudProfile?.todayWordsPracticed || 0),
+      rushHighScore: Math.max(localProfile.rushHighScore || 0, cloudProfile?.rushHighScore || 0),
+      activityHistory: {
+        ...(localProfile.activityHistory || {}),
+        ...(cloudProfile?.activityHistory || {}),
+      },
+    };
+
+    // 2. Merge Words: take higher timesReviewed/mastery
+    const mergedWords = { ...localWords };
+    if (cloudWords) {
+      Object.entries(cloudWords).forEach(([k, cw]) => {
+        const lw = mergedWords[k];
+        if (!lw) {
+          mergedWords[k] = cw;
+        } else {
+          mergedWords[k] = {
+            ...lw,
+            ...cw,
+            mastery: Math.max(lw.mastery, cw.mastery) as any,
+            timesReviewed: Math.max(lw.timesReviewed, cw.timesReviewed),
+            timesCorrect: Math.max(lw.timesCorrect, cw.timesCorrect),
+            timesIncorrect: Math.max(lw.timesIncorrect, cw.timesIncorrect),
+            starred: lw.starred || cw.starred,
+            lastReviewedAt: (lw.lastReviewedAt || '') > (cw.lastReviewedAt || '') ? lw.lastReviewedAt : cw.lastReviewedAt,
+          };
+        }
+      });
+    }
+
+    // 3. Merge Grammar: union of learned / starred, max score
+    const mergedGrammar = { ...localGrammar };
+    if (cloudGrammar) {
+      Object.entries(cloudGrammar).forEach(([k, cg]) => {
+        const lg = mergedGrammar[k];
+        if (!lg) {
+          mergedGrammar[k] = cg;
+        } else {
+          mergedGrammar[k] = {
+            ...lg,
+            ...cg,
+            learned: lg.learned || cg.learned,
+            starred: lg.starred || cg.starred,
+            quizScore: Math.max(lg.quizScore || 0, cg.quizScore || 0),
+          };
+        }
+      });
+    }
+
+    this.saveProfile(mergedProfile);
+    this.saveAllWordProgress(mergedWords);
+    this.saveAllGrammarProgress(mergedGrammar);
+
+    return this.getProfile();
   }
 
   resetAllData(): void {

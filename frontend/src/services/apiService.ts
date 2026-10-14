@@ -1,4 +1,4 @@
-import type { Word, GrammarRule } from '../types';
+import type { Word, GrammarRule, UserProfile, WordProgress, GrammarProgress } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000/api';
 
@@ -93,6 +93,34 @@ class ApiService {
           data: data.data,
           categories: data.categories || [],
         };
+      }
+    } catch {
+      // Fallback
+    }
+    return null;
+  }
+
+  async getProgress(token?: string): Promise<{
+    success: boolean;
+    profile?: UserProfile;
+    words_progress?: Record<string, WordProgress>;
+    grammar_progress?: Record<string, GrammarProgress>;
+  } | null> {
+    try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const res = await fetch(`${API_BASE_URL}/progress`, {
+        method: 'GET',
+        headers,
+      });
+
+      if (res.ok) {
+        return await res.json();
       }
     } catch {
       // Fallback

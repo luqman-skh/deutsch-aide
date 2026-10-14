@@ -74,6 +74,7 @@ export interface GrammarProgress {
 }
 
 export interface UserProfile {
+  userId?: string;
   name: string;
   targetLevel: CEFRLevel;
   xp: number;

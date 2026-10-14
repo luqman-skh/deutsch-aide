@@ -234,4 +234,27 @@ class SupabaseService:
             "source": "local_fallback"
         }
 
+    def get_word_id_map(self) -> Dict[str, int]:
+        """
+        Returns a dictionary mapping lowercase German word text to german_words.id.
+        Cached in memory after the first fetch.
+        """
+        if hasattr(self, "_word_id_map") and self._word_id_map:
+            return self._word_id_map
+
+        mapping: Dict[str, int] = {}
+        if self.client:
+            try:
+                res = self.client.table("german_words").select("id, german").range(0, 2000).execute()
+                if res.data:
+                    for row in res.data:
+                        g = (row.get("german") or "").lower().strip()
+                        if g and g not in mapping:
+                            mapping[g] = row.get("id")
+            except Exception as e:
+                print(f"Error building word_id_map from Supabase: {e}")
+
+        self._word_id_map = mapping
+        return self._word_id_map
+
 db_service = SupabaseService()

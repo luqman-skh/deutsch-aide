@@ -1,5 +1,5 @@
 from typing import List, Optional, Dict, Any, Union
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 # ============================================================
 # Vocabulary Models
@@ -55,47 +55,59 @@ class GrammarListResponse(BaseModel):
 # ============================================================
 
 class WordProgressItem(BaseModel):
-    word_key: str
+    model_config = ConfigDict(populate_by_name=True)
+
+    word_key: Optional[str] = Field(None, alias="wordKey")
     mastery: int = 0
-    times_reviewed: int = 0
-    times_correct: int = 0
-    times_incorrect: int = 0
-    last_reviewed_at: Optional[str] = None
-    next_review_at: Optional[str] = None
+    times_reviewed: int = Field(0, alias="timesReviewed")
+    times_correct: int = Field(0, alias="timesCorrect")
+    times_incorrect: int = Field(0, alias="timesIncorrect")
+    last_reviewed_at: Optional[str] = Field(None, alias="lastReviewedAt")
+    next_review_at: Optional[str] = Field(None, alias="nextReviewAt")
     starred: bool = False
 
 class GrammarProgressItem(BaseModel):
-    rule_id: str
+    model_config = ConfigDict(populate_by_name=True)
+
+    rule_id: Optional[str] = Field(None, alias="ruleId")
     learned: bool = False
     starred: bool = False
-    last_studied_at: Optional[str] = None
-    quiz_score: Optional[int] = None
+    last_studied_at: Optional[str] = Field(None, alias="lastStudiedAt")
+    quiz_score: Optional[int] = Field(0, alias="quizScore")
+    times_reviewed: int = Field(0, alias="timesReviewed")
 
 class UserProfileSchema(BaseModel):
-    user_id: Optional[str] = None
+    model_config = ConfigDict(populate_by_name=True)
+
+    user_id: Optional[str] = Field(None, alias="userId")
     email: Optional[str] = None
     name: str = "Deutschlerner"
-    target_level: str = "A1"
+    target_level: str = Field("A1", alias="targetLevel")
     xp: int = 0
     level: int = 1
-    level_title: str = "Anfänger (Novice)"
+    level_title: str = Field("Anfänger (Novice)", alias="levelTitle")
     streak: int = 1
-    last_active_date: Optional[str] = None
-    daily_goal: int = 15
-    today_words_practiced: int = 0
-    rush_high_score: int = 0
+    last_active_date: Optional[str] = Field(None, alias="lastActiveDate")
+    daily_goal: int = Field(15, alias="dailyGoal")
+    today_words_practiced: int = Field(0, alias="todayWordsPracticed")
+    today_date: Optional[str] = Field(None, alias="todayDate")
+    rush_high_score: int = Field(0, alias="rushHighScore")
     theme: str = "dark"
     language: str = "de"
-    sound_effects: bool = True
-    speech_speed: float = 1.0
-    activity_history: Dict[str, int] = Field(default_factory=dict)
+    sound_effects: bool = Field(True, alias="soundEffects")
+    speech_speed: float = Field(1.0, alias="speechSpeed")
+    activity_history: Dict[str, int] = Field(default_factory=dict, alias="activityHistory")
 
 class ProgressSyncRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     profile: Optional[UserProfileSchema] = None
-    words_progress: Optional[Dict[str, WordProgressItem]] = None
-    grammar_progress: Optional[Dict[str, GrammarProgressItem]] = None
+    words_progress: Optional[Dict[str, WordProgressItem]] = Field(None, alias="wordsProgress")
+    grammar_progress: Optional[Dict[str, GrammarProgressItem]] = Field(None, alias="grammarProgress")
 
 class ProgressSyncResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     success: bool
     message: str
     profile: Optional[UserProfileSchema] = None
